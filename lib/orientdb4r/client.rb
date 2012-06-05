@@ -176,8 +176,6 @@ module Orientdb4r
         rslt
       end
 
-#    before_filter :assert_connected, :include => [:disconnect, :query, :command]
-
   end
 
 end

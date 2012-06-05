@@ -1,9 +1,13 @@
 require 'json'
 require 'rest_client'
-require 'orientdb4r/utils'
-require 'orientdb4r/client'
 
+
+###
+# This module represents the entry point for using the Ruby OrientDB client.
 module Orientdb4r
+
+  autoload :Utils,        'orientdb4r/utils'
+  autoload :RestClient,   'orientdb4r/client'
 
   class << self
 
