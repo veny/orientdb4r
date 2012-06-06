@@ -13,7 +13,7 @@ module Orientdb4r
 
     ###
     # Gets a new database client or an existing for the current thread.
-    def client(options)
+    def client options={}
       Thread.current[:orientdb_client] ||= RestClient.new options
     end
 
@@ -27,7 +27,10 @@ module Orientdb4r
 
   ###
   # Basic error raised to signal an unexpected situation.
-  class OrientdbError < StandardError
-  end
+  class OrientdbError < StandardError; end
+
+  ###
+  # Error to be raised if a server method fails.
+  class OrientdbServerError < OrientdbError; end
 
 end

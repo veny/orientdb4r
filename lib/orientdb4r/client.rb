@@ -11,13 +11,13 @@ module Orientdb4r
 
     ###
     # Connects client to the server.
-    def connect
+    def connect options
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
     ###
     # Disconnects client from the server.
-    def disconnect()
+    def disconnect
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
@@ -25,6 +25,14 @@ module Orientdb4r
     # Gets flag whenever the client is connected or not.
     def connected?
       @connected
+    end
+
+    ###
+    # Creates a new database.
+    # You can provide an additional authentication to the server with 'database.create' resource
+    # or the current one will be used.
+    def create_database options
+      raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
     ###
@@ -95,28 +103,45 @@ module Orientdb4r
     before [:disconnect, :query, :command], :assert_connected
     around [:query, :command], :time_around
 
-    def initialize params #:nodoc:
+    attr_reader :host, :port, :ssl, :user, :password
+
+
+    def initialize options #:nodoc:
       super()
-      params_pattern = {
-        :host => 'localhost', :port => 2480, :database => :mandatory,
-        :user => :mandatory, :password => :mandatory, :ssl => false
-      }
-      verify_and_sanitize_options(params, params_pattern)
-
-      @url = "http#{'s' if params[:ssl]}://#{params[:host]}:#{params[:port]}"
-      @resource = ::RestClient::Resource.new(@url, :user => params[:user], :password => params[:password])
-      @database = params[:database]
+      options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
+      verify_and_sanitize_options(options, options_pattern)
+      @host = options[:host]
+      @port = options[:port]
+      @ssl = options[:ssl]
     end
 
-    def connect #:nodoc:
+
+    def connect options #:nodoc:
+      options_pattern = { :database => :mandatory, :user => :mandatory, :password => :mandatory }
+      verify_and_sanitize_options(options, options_pattern)
+      @database = options[:database]
+      @user = options[:user]
+      @password = options[:password]
+
+      @resource = ::RestClient::Resource.new(url, :user => user, :password => password)
+
       begin
-        response = @resource['connect/first'].get
-        process_response(response, :mode => :strict)
+        response = @resource["connect/#{@database}"].get
+        rslt = process_response(response, :mode => :strict)
         @connected = true
-      rescue
+      rescue ::RestClient::Exception => e
         @connected = false
+        raise process_error e, :http_code_401 => 'connect failed (bad credentials?)'
+      rescue Exception => e
+        # TODO use logging
+        $stderr.puts e.message
+        $stderr.puts e.backtrace.inspect
+        @connected = false
+        raise e
       end
+      rslt
     end
+
 
     def disconnect #:nodoc:
       begin
@@ -129,18 +154,53 @@ module Orientdb4r
       end
     end
 
+
+    ###
+    # :name
+    def create_database options={} #:nodoc:
+      options_pattern = {
+        :database => :mandatory, :type => 'memory',
+        :user => :optional, :password => :optional, :ssl => false
+      }
+      verify_and_sanitize_options(options, options_pattern)
+
+      u = options.include?(:user) ? options[:user] : user
+      p = options.include?(:password) ? options[:password] : password
+      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
+      begin
+        response = resource["database/#{options[:database]}/#{options[:type]}"].post ''
+      rescue ::RestClient::Exception => e
+        raise process_error e, \
+          :http_code_403 => 'forbidden operation (insufficient rights?)', \
+          :http_code_500 => 'failed to create database (exists already?)'
+
+      end
+      process_response(response)
+    end
+
+
     def query(sql) #:nodoc:
       response = @resource["query/#{@database}/sql/#{URI.escape(sql)}"].get
-      process_response(response)
-      ::JSON.parse(response.body)['result']
+      rslt = process_response(response)
+      rslt['result']
     end
 
     def command(sql) #:nodoc:
+      begin
       rslt = @resource["command/#{@database}/sql/#{URI.escape(sql)}"].post ''
       rslt.to_i
+      rescue Exception => e
+        raise process_error e
+      end
     end
 
     private
+
+      ###
+      # Gets URL for the REST interface.
+      def url
+        "http#{'s' if ssl}://#{host}:#{port}"
+      end
 
       ###
       # ==== options
@@ -174,6 +234,12 @@ module Orientdb4r
           end
 
         rslt
+      end
+
+      def process_error(error, messages={})
+        code = "http_code_#{error.http_code}".to_sym
+        msg = messages.include?(code) ? "#{messages[code]}, cause = " : ''
+        OrientdbError.new "#{msg}#{error.to_s}"
       end
 
   end
