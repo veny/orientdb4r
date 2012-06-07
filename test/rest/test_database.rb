@@ -43,7 +43,7 @@ class TestRest < Test::Unit::TestCase
 
   ###
   # CREATE DATABASE.
-  # Temporary disabled bacause of unknown way haw to drop a new created datatabse.
+  # Temporary disabled bacause of unknown way how to drop a new created datatabse.
   def xtest_create_database
     @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     # creating an existing DB
