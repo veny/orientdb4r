@@ -3,7 +3,7 @@ module Orientdb4r
   class RestClient < Client
     include Aop2
 
-    before [:query, :command], :assert_connected
+    before [:query, :command, :get_class], :assert_connected
     around [:query, :command], :time_around
 
     attr_reader :host, :port, :ssl, :user, :password
@@ -60,8 +60,6 @@ module Orientdb4r
     end
 
 
-    ###
-    # :name
     def create_database(options) #:nodoc:
       options_pattern = {
         :database => :mandatory, :type => 'memory',
@@ -83,6 +81,21 @@ module Orientdb4r
       process_response(response)
     end
 
+
+    def get_class(name) #:nodoc:
+      raise ArgumentError, "class name is blank" if blank?(name)
+
+      # there seems to be a bug in REST API, only data are returned
+      #response = @resource["class/#{@database}/#{name}"].get
+      #rslt = process_response(response)
+
+      # workaround - use metadate delivered by 'connect'
+      response = @resource["connect/#{@database}"].get
+      connect_info = process_response(response, :mode => :strict)
+      clazz = connect_info['classes'].select { |i| i['name'] == name }
+      raise ArgumentError, "class not found, name=#{name}" if 1 != clazz.size
+      clazz[0]
+    end
 
     def query(sql) #:nodoc:
       response = @resource["query/#{@database}/sql/#{URI.escape(sql)}"].get

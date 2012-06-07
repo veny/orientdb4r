@@ -31,7 +31,13 @@ module Orientdb4r
     # Creates a new database.
     # You can provide an additional authentication to the server with 'database.create' resource
     # or the current one will be used.
-    def create_database options
+    def create_database(options)
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+    ###
+    # Gets informations about requested class.
+    def get_class(name)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
@@ -50,16 +56,6 @@ module Orientdb4r
     ###
     # Creates a new class in the schema.
     def create_class(name, options={})
-#create_table :field, :options => 'ENGINE=InnoDB DEFAULT CHARSET=utf8', :force => false do |t|
-#  t.column :entity, :integer, :null => false
-#  t.column :name, :integer, :null => false
-#  t.column :type, :integer, :null => false
-#  t.column :mandatory, :boolean, :null => false, :default => 0
-#  t.column :search, :boolean, :null => false, :default => 0
-#  t.column :whoset, :string
-#  t.column :stamp, :integer
-#end
-
       raise ArgumentError, "class name is blank" if blank?(name)
       opt_pattern = { :extends => :optional , :cluster => :optional, :force => false }
       verify_options(options, opt_pattern)
@@ -72,9 +68,9 @@ module Orientdb4r
 
       command sql, :http_code_500 => 'failed to create class (exists already, bad supperclass?)'
 
-      oclass = Orientdb4r::OClass.new name
-
-      yield oclass if block_given?
+      if block_given?
+        yield Orientdb4r::OClass.new(name)
+      end
     end
 
     ###
@@ -82,6 +78,17 @@ module Orientdb4r
     def drop_class(name)
       raise ArgumentError, "class name is blank" if blank?(name)
       command "DROP CLASS #{name}"
+    end
+
+    ###
+    # Creates a new property in the schema.
+    # You need to create the class before.
+    def create_property(clazz, property, type)
+      raise ArgumentError, "class name is blank" if blank?(clazz)
+      raise ArgumentError, "property name is blank" if blank?(property)
+
+      cmd = "CREATE PROPERTY #{clazz}.#{property} #{type.to_s}"
+      command cmd, :http_code_500 => 'failed to create property (exists already?)'
     end
 
     protected

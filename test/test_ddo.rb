@@ -28,18 +28,27 @@ class TestRest < Test::Unit::TestCase
 
 
   ###
+  # GET - Class
+  def test_get_class
+    ouser = {}
+    assert_nothing_raised do ouser = @client.get_class 'OUser'; end
+    assert 'OUser' == ouser['name']
+    # class does not exist
+    assert_raise ArgumentError do @client.get_class 'OUserXXX'; end
+  end
+
+
+  ###
   # CREATE TABLE
   def test_create_class
     assert_nothing_raised do @client.create_class(CLASS); end
+    assert_nothing_raised do @client.get_class(CLASS); end
     # already exist
     assert_raise Orientdb4r::OrientdbError do @client.create_class(CLASS); end
 
-    # the class is visible in class list delivered by connect
-    rslt = @client.connect :database => @database, :user => 'admin', :password => 'admin'
-    assert 1 == rslt['classes'].select { |i| i['name'] == CLASS }.size
-
     # create with :force=>true
     assert_nothing_raised do @client.create_class(CLASS, :force => true); end
+    assert_nothing_raised do @client.get_class(CLASS); end
   end
 
 
@@ -47,11 +56,9 @@ class TestRest < Test::Unit::TestCase
   # CREATE TABLE ... EXTENDS
   def test_create_class_extends
     assert_nothing_raised do @client.create_class(CLASS, :extends => 'OUser'); end
-    rslt = @client.connect :database => @database, :user => 'admin', :password => 'admin'
-    clazz_info = rslt['classes'].select { |i| i['name'] == CLASS }
-    assert 1 == clazz_info.size
-    assert 'OUser' == clazz_info[0]['superClass']
+    assert_nothing_raised do @client.get_class(CLASS); end
 
+    # bad super class
     assert_raise Orientdb4r::OrientdbError do @client.create_class(CLASS, :extends => 'nonExistingSuperClass'); end
   end
 
@@ -61,9 +68,20 @@ class TestRest < Test::Unit::TestCase
   def test_drop_table
     assert_nothing_raised do @client.drop_class(CLASS); end
 
-    # the class is visible in class list delivered by connect
+    # the class is not visible in class list delivered by connect
     rslt = @client.connect :database => @database, :user => 'admin', :password => 'admin'
     assert rslt['classes'].select { |i| i['name'] == CLASS }.empty?
+  end
+
+
+  ###
+  # CREATE PROPERTY
+  def test_create_property
+    @client.create_class(CLASS)
+    assert_nothing_raised do @client.create_property(CLASS, 'prop1', :integer); end
+
+    # already exist
+    assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
   end
 
 
