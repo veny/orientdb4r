@@ -91,12 +91,32 @@ class TestRest < Test::Unit::TestCase
   end
 
 
+  ###
+  # CREATE CLASS + PROPERTY
   def test_create_class_with_properties
     assert_nothing_thrown do
       @client.create_class(CLASS) do |c|
         c.property 'prop1', :integer
+        c.property 'prop2', :string, :mandatory => true, :notnull => :true, :min => 1, :max => 99
       end
     end
+
+    clazz = @client.get_class(CLASS)
+    assert_equal 2, clazz['properties'].size
+
+    prop1 = clazz['properties'].select { |i| i['name'] == 'prop1' }[0]
+    assert_equal 'INTEGER', prop1['type']
+    assert !prop1['mandatory']
+    assert !prop1['notNull']
+    assert prop1['min'].nil?
+    assert prop1['max'].nil?
+
+    prop2 = clazz['properties'].select { |i| i['name'] == 'prop2' }[0]
+    assert_equal 'STRING', prop2['type']
+    assert prop2['mandatory']
+    assert prop2['notNull']
+    assert_equal '1', prop2['min']
+    assert_equal '99',  prop2['max']
   end
 
 end

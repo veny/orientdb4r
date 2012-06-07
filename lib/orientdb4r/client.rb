@@ -70,9 +70,9 @@ module Orientdb4r
 
       if block_given?
         proxy = Orientdb4r::Utils::Proxy.new(self, name)
-        def proxy.property(property, type)
+        def proxy.property(property, type, options={})
 #          puts "AHOJ #{self.context}"
-          self.target.send :create_property, self.context, property, type
+          self.target.send :create_property, self.context, property, type, options
         end
         yield proxy
       end
@@ -81,6 +81,7 @@ module Orientdb4r
     ###
     # Removes a class from the schema.
     def drop_class(name)
+      # TODO in :mode=>:strict verify if the class is no a super class
       raise ArgumentError, "class name is blank" if blank?(name)
       command "DROP CLASS #{name}"
     end
@@ -88,12 +89,23 @@ module Orientdb4r
     ###
     # Creates a new property in the schema.
     # You need to create the class before.
-    def create_property(clazz, property, type)
+    def create_property(clazz, property, type, options={})
       raise ArgumentError, "class name is blank" if blank?(clazz)
       raise ArgumentError, "property name is blank" if blank?(property)
+      opt_pattern = {
+        :mandatory => :optional , :notnull => :optional, :min => :optional, :max => :optional,
+        :regexp =>  :optional, :custom => :optional
+      }
+      verify_options(options, opt_pattern)
 
       cmd = "CREATE PROPERTY #{clazz}.#{property} #{type.to_s}"
       command cmd, :http_code_500 => 'failed to create property (exists already?)'
+
+      unless options.empty?
+        options.each do |k,v|
+          command "ALTER PROPERTY #{clazz}.#{property} #{k.to_s.upcase} #{v}"
+        end
+      end
     end
 
     protected
