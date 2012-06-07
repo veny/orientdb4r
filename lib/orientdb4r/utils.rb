@@ -112,11 +112,11 @@ module Orientdb4r
                 #{orig_method}_aop2_orig(#{params})
               }
               self.class.invoke_hooks(self, :after, :#{orig_method})
-            rescue Exception => e
-              # TODO use logging
-              $stderr.puts e.message
-              $stderr.puts e.backtrace.inspect
-              raise e
+#            rescue Exception => e
+#              # TODO use logging
+#              $stderr.puts '' << e.class.name << ': ' << e.message
+#              $stderr.puts e.backtrace.inspect
+#              raise e
             ensure
               self.aop_context = nil
             end

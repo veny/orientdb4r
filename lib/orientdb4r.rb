@@ -7,7 +7,8 @@ require 'rest_client'
 module Orientdb4r
 
   autoload :Utils,        'orientdb4r/utils'
-  autoload :RestClient,   'orientdb4r/client'
+  autoload :Client,       'orientdb4r/client'
+  autoload :RestClient,   'orientdb4r/rest/client'
 
   class << self
 
@@ -28,9 +29,5 @@ module Orientdb4r
   ###
   # Basic error raised to signal an unexpected situation.
   class OrientdbError < StandardError; end
-
-  ###
-  # Error to be raised if a server method fails.
-  class OrientdbServerError < OrientdbError; end
 
 end

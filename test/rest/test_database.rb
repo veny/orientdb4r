@@ -1,6 +1,11 @@
 require 'test/unit'
 require "orientdb4r"
 
+###
+# This class tests following operations:
+# * CONNECT
+# * DISCONNECT
+# * CREATE DATABASE
 class TestRest < Test::Unit::TestCase
 
   def setup
@@ -23,6 +28,16 @@ class TestRest < Test::Unit::TestCase
     assert_raise Orientdb4r::OrientdbError do
       @client.connect :database => 'temp', :user => 'admin1', :password => 'admin'
     end
+  end
+
+
+  ###
+  # DISCONNECT.
+  def test_disconnect
+    @client.disconnect
+    assert !@client.connected?
+    # unable to query after disconnect
+    assert_raise Orientdb4r::OrientdbError do @client.query 'SELECT FROM OUser'; end
   end
 
 
