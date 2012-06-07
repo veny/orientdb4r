@@ -1,0 +1,17 @@
+= orientdb4r - Ruby binding for Orient DB
+
+A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.org/).
+
+== USAGE
+
+  require 'orientdb4r'
+
+  client = Orientdb4r.client
+  client.query 'SELECT FROM OUser'
+
+
+== FEATURES/PROBLEMS
+
+== REQUIREMENTS
+
+== LICENSE

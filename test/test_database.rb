@@ -1,5 +1,5 @@
 require 'test/unit'
-require "orientdb4r"
+require 'orientdb4r'
 
 ###
 # This class tests following operations:
