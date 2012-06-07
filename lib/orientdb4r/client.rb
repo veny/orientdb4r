@@ -69,7 +69,12 @@ module Orientdb4r
       command sql, :http_code_500 => 'failed to create class (exists already, bad supperclass?)'
 
       if block_given?
-        yield Orientdb4r::OClass.new(name)
+        proxy = Orientdb4r::Utils::Proxy.new(self, name)
+        def proxy.property(property, type)
+#          puts "AHOJ #{self.context}"
+          self.target.send :create_property, self.context, property, type
+        end
+        yield proxy
       end
     end
 
@@ -99,6 +104,8 @@ module Orientdb4r
         raise OrientdbError, "not connected" unless @connected
       end
 
+      ###
+      # Around advice to meassure and print the method time.
       def time_around(&block)
         start = Time.now
         rslt = block.call

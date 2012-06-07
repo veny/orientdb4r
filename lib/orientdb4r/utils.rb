@@ -31,6 +31,22 @@ module Orientdb4r
       str.nil? or str.strip.empty?
     end
 
+
+    class Proxy
+
+      attr_reader :target, :context
+
+      def initialize(target, context)
+        @target = target
+        @context = context
+      end
+
+      def proxy(&block)
+        block.call
+      end
+
+    end
+
   end
 
 
