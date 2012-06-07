@@ -1,6 +1,6 @@
 = orientdb4r - Ruby binding for Orient DB
 
-A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.org/).
+A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.org).
 
 == USAGE
 
@@ -8,8 +8,12 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
   client = Orientdb4r.client
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-  client.query 'SELECT FROM OUser'
 
+  client.create_class 'myclass'
+
+  client.query 'SELECT FROM myclass'
+
+  clien.disconnect
 
 == FEATURES/PROBLEMS
 
@@ -18,7 +22,7 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 == AUTHOR
 
 * vaclav.sykora@gmail.com
-* https://plus.google.com/s/Vaclav%20Sykora
+* https://plus.google.com/115674031373998885915
 
 == LICENSE
 

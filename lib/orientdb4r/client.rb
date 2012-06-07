@@ -68,7 +68,13 @@ module Orientdb4r
       sql << " EXTENDS #{options[:extends]}" if options.include? :extends
       sql << " CLUSTER #{options[:cluster]}" if options.include? :cluster
 
-      command sql, :http_code_500 => 'failed to create class (exists already?)'
+      drop_class name if options[:force]
+
+      command sql, :http_code_500 => 'failed to create class (exists already, bad supperclass?)'
+
+      oclass = Orientdb4r::OClass.new name
+
+      yield oclass if block_given?
     end
 
     ###

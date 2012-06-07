@@ -9,6 +9,7 @@ module Orientdb4r
   autoload :Utils,        'orientdb4r/utils'
   autoload :Client,       'orientdb4r/client'
   autoload :RestClient,   'orientdb4r/rest/client'
+  autoload :OClass,       'orientdb4r/oclass'
 
   class << self
 
