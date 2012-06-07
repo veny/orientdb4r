@@ -7,6 +7,7 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
   require 'orientdb4r'
 
   client = Orientdb4r.client
+  client.connect :database => 'temp', :user => 'admin', :password => 'admin'
   client.query 'SELECT FROM OUser'
 
 
@@ -14,4 +15,15 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
 == REQUIREMENTS
 
+== AUTHOR
+
+vaclav.sykora@gmail.com
+https://plus.google.com/s/Vaclav%20Sykora
+
 == LICENSE
+
+Apache License
+Version 2.0
+http://www.apache.org/licenses/
+
+see LICENSE file for more details...
