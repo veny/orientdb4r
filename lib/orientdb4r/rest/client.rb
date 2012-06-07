@@ -9,7 +9,7 @@ module Orientdb4r
     attr_reader :host, :port, :ssl, :user, :password
 
 
-    def initialize options #:nodoc:
+    def initialize(options) #:nodoc:
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
       verify_and_sanitize_options(options, options_pattern)
@@ -19,7 +19,7 @@ module Orientdb4r
     end
 
 
-    def connect options #:nodoc:
+    def connect(options) #:nodoc:
       options_pattern = { :database => :mandatory, :user => :mandatory, :password => :mandatory }
       verify_and_sanitize_options(options, options_pattern)
       @database = options[:database]
@@ -62,7 +62,7 @@ module Orientdb4r
 
     ###
     # :name
-    def create_database options={} #:nodoc:
+    def create_database(options) #:nodoc:
       options_pattern = {
         :database => :mandatory, :type => 'memory',
         :user => :optional, :password => :optional, :ssl => false
@@ -90,12 +90,15 @@ module Orientdb4r
       rslt['result']
     end
 
-    def command(sql) #:nodoc:
+    def command(sql, options={}) #:nodoc:
       begin
-      rslt = @resource["command/#{@database}/sql/#{URI.escape(sql)}"].post ''
-      rslt.to_i
+#puts "REQ #{sql}"
+        response = @resource["command/#{@database}/sql/#{URI.escape(sql)}"].post ''
+        rslt = process_response(response)
+        rslt
+#puts "RESP #{response.code}"
       rescue Exception => e
-        raise process_error e
+        raise process_error e, options.select { |k,v| k.to_s.start_with? 'http_code' }
       end
     end
 

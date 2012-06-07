@@ -43,7 +43,7 @@ module Orientdb4r
 
     ###
     # Executes a command against the database.
-    def command(sql)
+    def command(sql, options={})
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
@@ -60,21 +60,21 @@ module Orientdb4r
 #  t.column :stamp, :integer
 #end
 
-      raise "name is blank" if name.nil? or name.strip.empty?
-      opt_pattern = { :extends => :optional , :cluster => :optional }
+      raise ArgumentError, "class name is blank" if blank?(name)
+      opt_pattern = { :extends => :optional , :cluster => :optional, :force => false }
       verify_options(options, opt_pattern)
 
       sql = "CREATE CLASS #{name}"
       sql << " EXTENDS #{options[:extends]}" if options.include? :extends
       sql << " CLUSTER #{options[:cluster]}" if options.include? :cluster
 
-      command sql
+      command sql, :http_code_500 => 'failed to create class (exists already?)'
     end
 
     ###
     # Removes a class from the schema.
     def drop_class(name)
-      raise "name is blank" if name.nil? or name.strip.empty?
+      raise ArgumentError, "class name is blank" if blank?(name)
       command "DROP CLASS #{name}"
     end
 

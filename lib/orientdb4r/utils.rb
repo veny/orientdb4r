@@ -24,6 +24,13 @@ module Orientdb4r
       options
     end
 
+
+    ###
+    # Checks if a given string is either 'nil' or empty string.
+    def blank?(str)
+      str.nil? or str.strip.empty?
+    end
+
   end
 
 

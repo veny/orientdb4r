@@ -17,10 +17,10 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
 == AUTHOR
 
- * vaclav.sykora@gmail.com
- * https://plus.google.com/s/Vaclav%20Sykora
+* vaclav.sykora@gmail.com
+* https://plus.google.com/s/Vaclav%20Sykora
 
 == LICENSE
 
- * Apache License, Version 2.0, http://www.apache.org/licenses/
- * see LICENSE file for more details...
+* Apache License, Version 2.0, http://www.apache.org/licenses/
+* see LICENSE file for more details...

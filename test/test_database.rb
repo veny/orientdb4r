@@ -13,7 +13,7 @@ class TestRest < Test::Unit::TestCase
   end
 
   ###
-  # CONNECT.
+  # CONNECT
   def test_connect
     rslt = @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
     assert_instance_of Hash, rslt
@@ -32,7 +32,7 @@ class TestRest < Test::Unit::TestCase
 
 
   ###
-  # DISCONNECT.
+  # DISCONNECT
   def test_disconnect
     @client.disconnect
     assert !@client.connected?
@@ -42,7 +42,7 @@ class TestRest < Test::Unit::TestCase
 
 
   ###
-  # CREATE DATABASE.
+  # CREATE DATABASE
   # Temporary disabled bacause of unknown way how to drop a new created datatabse.
   def xtest_create_database
     @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
