@@ -22,6 +22,17 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
   1.upto(10) { |i| @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')" }
 
 
+  puts client.query("SELECT FROM #{CLASS}")
+  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"testing", "prop1"=>1, "prop2"=>"string1"}
+  > {"@type"=>"d", "@rid"=>"#6:1", "@version"=>0, "@class"=>"testing", "prop1"=>2, "prop2"=>"string2"}
+  > {"@type"=>"d", "@rid"=>"#6:2", "@version"=>0, "@class"=>"testing", "prop1"=>3, "prop2"=>"string3"}
+  > {"@type"=>"d", "@rid"=>"#6:3", "@version"=>0, "@class"=>"testing", "prop1"=>4, "prop2"=>"string4"}
+  > {"@type"=>"d", "@rid"=>"#6:4", "@version"=>0, "@class"=>"testing", "prop1"=>5, "prop2"=>"string5"}
+  > {"@type"=>"d", "@rid"=>"#6:5", "@version"=>0, "@class"=>"testing", "prop1"=>6, "prop2"=>"string6"}
+  > {"@type"=>"d", "@rid"=>"#6:6", "@version"=>0, "@class"=>"testing", "prop1"=>7, "prop2"=>"string7"}
+  > {"@type"=>"d", "@rid"=>"#6:7", "@version"=>0, "@class"=>"testing", "prop1"=>8, "prop2"=>"string8"}
+  > {"@type"=>"d", "@rid"=>"#6:8", "@version"=>0, "@class"=>"testing", "prop1"=>9, "prop2"=>"string9"}
+  > {"@type"=>"d", "@rid"=>"#6:9", "@version"=>0, "@class"=>"testing", "prop1"=>10, "prop2"=>"string10"}
   puts client.query("SELECT count(*) FROM #{CLASS}")
   > {"@type"=>"d", "@version"=>0, "count"=>10, "@fieldTypes"=>"count=l"}
   puts client.query("SELECT max(prop1) FROM #{CLASS}")
