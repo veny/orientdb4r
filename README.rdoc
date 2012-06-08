@@ -44,6 +44,10 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
   client.drop_class CLASS
   client.disconnect
 
+== INSTALL
+
+  > sudo gem install orientdb4r
+
 == FEATURES/PROBLEMS
 
 * Supports only REST API right now
