@@ -71,7 +71,6 @@ module Orientdb4r
       if block_given?
         proxy = Orientdb4r::Utils::Proxy.new(self, name)
         def proxy.property(property, type, options={})
-#          puts "AHOJ #{self.context}"
           self.target.send :create_property, self.context, property, type, options
         end
         yield proxy

@@ -16,7 +16,7 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
   client.query 'SELECT FROM myclass'
 
-  clien.disconnect
+  client.disconnect
 
 == FEATURES/PROBLEMS
 
