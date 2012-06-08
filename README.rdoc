@@ -48,6 +48,8 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
   > sudo gem install orientdb4r
 
+* gem published on http://rubygems.org/gems/orientdb4r
+
 == FEATURES/PROBLEMS
 
 * Supports only REST API right now
