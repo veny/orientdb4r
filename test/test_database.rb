@@ -6,7 +6,7 @@ require 'orientdb4r'
 # * CONNECT
 # * DISCONNECT
 # * CREATE DATABASE
-class TestRest < Test::Unit::TestCase
+class TestDatabase < Test::Unit::TestCase
 
   Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
 

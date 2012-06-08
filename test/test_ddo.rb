@@ -3,7 +3,7 @@ require 'orientdb4r'
 
 ###
 # This class tests Data Definition Operarions.
-class TestRest < Test::Unit::TestCase
+class TestDdo < Test::Unit::TestCase
 
   CLASS = 'testing'
   Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
