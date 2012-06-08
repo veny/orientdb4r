@@ -4,6 +4,7 @@ require 'orientdb4r'
 ###
 # This class tests Data Manipulation Operarions.
 class TestDmo < Test::Unit::TestCase
+  include Orientdb4r::Utils
 
   CLASS = 'testing'
   DB = 'temp'
@@ -26,10 +27,27 @@ class TestDmo < Test::Unit::TestCase
   end
 
 
+  ###
+  # INSERT INTO
   def test_insert
-    @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (1, 'test')"
+    assert_nothing_thrown do
+      1.upto(10) do |i|
+        @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, '#{random_string}')"
+      end
+    end
 
-    puts @client.query "SELECT count(*) FROM #{CLASS}"
+    assert_equal 10, @client.query("SELECT count(*) FROM #{CLASS}")[0]['count'].to_i
+  end
+
+
+  ###
+  # SELECT
+  def test_query
+    1.upto(10) do |i|
+      @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')"
+    end
+
+    puts @client.query("SELECT FROM #{CLASS}")
   end
 
 end

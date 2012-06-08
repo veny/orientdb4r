@@ -6,15 +6,18 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
   require 'orientdb4r'
 
+  CLASS = 'myclass'
   client = Orientdb4r.client
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
 
-  client.create_class('myclass') do |c|
+  client.create_class(CLASS) do |c|
     c.property 'prop1', :integer
     c.property 'prop2', :string, :mandatory => true, :notnull => :true, :min => 1, :max => 99
   end
 
-  client.query 'SELECT FROM myclass'
+  client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, '#{random_string}')"
+
+  client.query "SELECT FROM #{CLASS}"
 
   client.disconnect
 
