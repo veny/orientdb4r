@@ -24,8 +24,13 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
   puts client.query("SELECT count(*) FROM #{CLASS}")
   > {"@type"=>"d", "@version"=>0, "count"=>10, "@fieldTypes"=>"count=l"}
+  puts client.query("SELECT max(prop1) FROM #{CLASS}")
+  > {"@type"=>"d", "@version"=>0, "max"=>10}
+  puts client.query("SELECT FROM #{CLASS} WHERE prop2 LIKE '%10'")
+  > {"@type"=>"d", "@rid"=>"#6:9", "@version"=>0, "@class"=>"testing", "prop1"=>10, "prop2"=>"string10"}
 
 
+  client.drop_class CLASS
   client.disconnect
 
 == FEATURES/PROBLEMS

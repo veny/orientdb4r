@@ -47,7 +47,7 @@ class TestDmo < Test::Unit::TestCase
       @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')"
     end
 
-    puts @client.query("SELECT count(*) FROM #{CLASS}")
+    puts @client.query("SELECT FROM #{CLASS} WHERE prop2 LIKE '%10'")
   end
 
 end
