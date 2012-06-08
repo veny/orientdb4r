@@ -24,7 +24,7 @@ module Orientdb4r
 
   # Configuration of logging.
   DEFAULT_LOGGER = Logger.new(STDOUT)
-  DEFAULT_LOGGER.level = Logger::DEBUG
+  DEFAULT_LOGGER.level = Logger::INFO
 
 
   class << self

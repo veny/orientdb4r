@@ -6,6 +6,7 @@ require 'orientdb4r'
 class TestRest < Test::Unit::TestCase
 
   CLASS = 'testing'
+  Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
 
   def initialize(params)
     super params
