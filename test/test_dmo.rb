@@ -29,7 +29,7 @@ class TestDmo < Test::Unit::TestCase
   def test_insert
     @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (1, 'test')"
 
-    puts @client.query "SELECT FROM #{CLASS}"
+    puts @client.query "SELECT count(*) FROM #{CLASS}"
   end
 
 end

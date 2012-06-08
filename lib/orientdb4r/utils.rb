@@ -31,6 +31,12 @@ module Orientdb4r
       str.nil? or str.strip.empty?
     end
 
+    ###
+    # Generates a random string with given length.
+    def random_string(len=8)
+      (0...len).map{65.+(rand(25)).chr}.join
+    end
+
 
     class Proxy
 
