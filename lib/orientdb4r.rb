@@ -1,5 +1,6 @@
 require 'json'
 require 'rest_client'
+require 'logger'
 
 
 ###
@@ -9,7 +10,7 @@ module Orientdb4r
   autoload :Utils,        'orientdb4r/utils'
   autoload :Client,       'orientdb4r/client'
   autoload :RestClient,   'orientdb4r/rest/client'
-  autoload :OClass,       'orientdb4r/oclass'
+
 
   # Version history.
   VERSION_HISTORY = [
@@ -19,6 +20,11 @@ module Orientdb4r
 
   # Current version.
   VERSION = VERSION_HISTORY[0][0]
+
+
+  # Configuration of logging.
+  DEFAULT_LOGGER = Logger.new(STDOUT)
+  DEFAULT_LOGGER.level = Logger::DEBUG
 
 
   class << self
@@ -43,3 +49,7 @@ module Orientdb4r
   class OrientdbError < StandardError; end
 
 end
+
+
+Orientdb4r::DEFAULT_LOGGER.info \
+  "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"
