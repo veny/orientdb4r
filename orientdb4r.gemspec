@@ -1,13 +1,16 @@
 # -*- encoding: utf-8 -*-
 
+$:.unshift File.expand_path('../lib', __FILE__)
+require 'orientdb4r/version'
+
 Gem::Specification.new do |s|
 
   s.name = %q{orientdb4r}
-  s.version = '0.1.1'
+  s.version = Orientdb4r::VERSION
 
   s.required_rubygems_version = Gem::Requirement.new('> 1.3.1') if s.respond_to? :required_rubygems_version=
   s.authors = ['Vaclav Sykora']
-  s.date = %q{2012-06-08 08:21:02 +0200}
+  s.date = Orientdb4r::VERSION_HISTORY[0][1]
   s.description = %q{Orientdb4r provides a simple interface on top of OrientDB's RESTful HTTP API.}
   s.email = %q{vaclav.sykora@gmail.com}
 
