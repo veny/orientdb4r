@@ -19,7 +19,7 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
   end
 
 
-  1.upto(10) { |i| @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')" }
+  1.upto(10) { |i| client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')" }
 
 
   puts client.query("SELECT FROM #{CLASS}")
