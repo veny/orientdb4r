@@ -7,23 +7,36 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
   require 'orientdb4r'
 
   CLASS = 'myclass'
-  client = Orientdb4r.client
+
+  client = Orientdb4r.client  # equivalent for :host => 'localhost', :port => 2480, :ssl => false
+
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+
 
   client.create_class(CLASS) do |c|
     c.property 'prop1', :integer
     c.property 'prop2', :string, :mandatory => true, :notnull => :true, :min => 1, :max => 99
   end
 
-  client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, '#{random_string}')"
 
-  client.query "SELECT FROM #{CLASS}"
+  1.upto(10) { |i| @client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')" }
+
+
+  puts client.query("SELECT count(*) FROM #{CLASS}")
+  > {"@type"=>"d", "@version"=>0, "count"=>10, "@fieldTypes"=>"count=l"}
+
 
   client.disconnect
 
 == FEATURES/PROBLEMS
 
+* Supports only REST API right now
+
 == REQUIREMENTS
+
+Tested on
+* Ruby 1.9.3
+* OrientDB 1.0.0
 
 == AUTHOR
 
