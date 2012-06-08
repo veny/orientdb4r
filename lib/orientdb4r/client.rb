@@ -120,7 +120,7 @@ module Orientdb4r
       def time_around(&block)
         start = Time.now
         rslt = block.call
-        Orientdb4r::DEFAULT_LOGGER.debug \
+        Orientdb4r::logger.debug \
           "#{aop_context[:class].name}##{aop_context[:method]}: elapsed time = #{Time.now - start} [s]"
         rslt
       end

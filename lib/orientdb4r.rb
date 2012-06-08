@@ -13,11 +13,6 @@ module Orientdb4r
   autoload :RestClient,   'orientdb4r/rest/client'
 
 
-  # Configuration of logging.
-  DEFAULT_LOGGER = Logger.new(STDOUT)
-  DEFAULT_LOGGER.level = Logger::INFO
-
-
   class << self
 
     ###
@@ -32,6 +27,8 @@ module Orientdb4r
       RestClient.proxy = url
     end
 
+    attr_accessor :logger
+
   end
 
 
@@ -42,5 +39,9 @@ module Orientdb4r
 end
 
 
-Orientdb4r::DEFAULT_LOGGER.info \
+# Configuration of logging.
+Orientdb4r::logger = Logger.new(STDOUT)
+Orientdb4r::logger.level = Logger::INFO
+
+Orientdb4r::logger.info \
   "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"

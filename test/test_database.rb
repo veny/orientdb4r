@@ -8,7 +8,7 @@ require 'orientdb4r'
 # * CREATE DATABASE
 class TestDatabase < Test::Unit::TestCase
 
-  Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
+  Orientdb4r::logger.level = Logger::DEBUG
 
   def setup
     @client = Orientdb4r.client

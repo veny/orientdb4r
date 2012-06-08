@@ -36,8 +36,8 @@ module Orientdb4r
         @connected = false
         raise process_error e, :http_code_401 => 'connect failed (bad credentials?)'
       rescue Exception => e
-        Orientdb4r::DEFAULT_LOGGER.error e.message
-        Orientdb4r::DEFAULT_LOGGER.error e.backtrace.inspect
+        Orientdb4r::logger.error e.message
+        Orientdb4r::logger.error e.backtrace.inspect
         @connected = false
         raise e
       end
@@ -51,7 +51,7 @@ module Orientdb4r
       begin
         response = @resource['disconnect'].get
       rescue ::RestClient::Unauthorized
-        Orientdb4r::DEFAULT_LOGGER.warn '401 Unauthorized - bug in disconnect?'
+        Orientdb4r::logger.warn '401 Unauthorized - bug in disconnect?'
       ensure
         @connected = false
       end
@@ -135,7 +135,7 @@ module Orientdb4r
         # log warning if other than 200 and raise problem if other code than 'Successful 2xx'
         if options[:mode] == :warning
           if 200 != response.code and 2 == (response.code / 100)
-            Orientdb4r::DEFAULT_LOGGER.warn "expected return code 200, but received #{response.code}"
+            Orientdb4r::logger.warn "expected return code 200, but received #{response.code}"
           elseif 200 != response.code
             raise OrientdbError, "unexpeted return code, code=#{response.code}"
           end

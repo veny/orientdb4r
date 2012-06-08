@@ -4,6 +4,8 @@ A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.o
 
 == USAGE
 
+* see Wiki page for more sample - https://github.com/veny/orientdb4r/wiki
+
   require 'orientdb4r'
 
   CLASS = 'myclass'

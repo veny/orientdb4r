@@ -8,7 +8,7 @@ class TestDmo < Test::Unit::TestCase
 
   CLASS = 'testing'
   DB = 'temp'
-  Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
+  Orientdb4r::logger.level = Logger::DEBUG
 
 
   def setup
