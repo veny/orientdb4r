@@ -6,19 +6,17 @@ require 'orientdb4r'
 class TestDdo < Test::Unit::TestCase
 
   CLASS = 'testing'
+  DB = 'temp'
   Orientdb4r::DEFAULT_LOGGER.level = Logger::DEBUG
 
   def initialize(params)
     super params
-#    @database = (0...8).map{65.+(rand(25)).chr}.join
-    @database = 'temp'
 
     @client = Orientdb4r.client
-#    @client.create_database :database => @database, :user => 'root', :password => 'root'
   end
 
   def setup
-    @client.connect :database => @database, :user => 'admin', :password => 'admin'
+    @client.connect :database => DB, :user => 'admin', :password => 'admin'
   end
 
   def teardown
@@ -70,7 +68,7 @@ class TestDdo < Test::Unit::TestCase
     assert_nothing_thrown do @client.drop_class(CLASS); end
 
     # the class is not visible in class list delivered by connect
-    rslt = @client.connect :database => @database, :user => 'admin', :password => 'admin'
+    rslt = @client.connect :database => DB, :user => 'admin', :password => 'admin'
     assert rslt['classes'].select { |i| i['name'] == CLASS }.empty?
   end
 
