@@ -31,6 +31,18 @@ module Orientdb4r
       get_mandatory_attribute :superClass
     end
 
+    ###
+    # Gets clusters of the class.
+    def clusters
+      get_mandatory_attribute :clusters
+    end
+
+    ###
+    # Gets the default cluster.
+    def default_cluster
+      get_mandatory_attribute :defaultCluster
+    end
+
     #------------------------------------------------------------------- Helpers
 
     ###

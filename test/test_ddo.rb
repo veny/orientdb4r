@@ -29,11 +29,22 @@ class TestDdo < Test::Unit::TestCase
   ###
   # GET - Class
   def test_get_class
-    ouser = {}
     assert_nothing_thrown do ouser = @client.get_class 'OUser'; end
-    assert_equal 'OUser', ouser.name
     # class does not exist
     assert_raise ArgumentError do @client.get_class 'OUserXXX'; end
+
+    clazz = @client.get_class 'OUser'
+    # test OClass
+    assert_equal 'OUser', clazz.name
+    assert_nothing_thrown do clazz.properties; end
+    assert_instance_of Array, clazz.properties
+    assert !clazz.properties.empty?
+    assert_nothing_thrown do clazz.property(:password); end
+    assert_raise ArgumentError do clazz.property(:unknown_prop); end
+    assert_equal '', clazz.super_class
+    assert_instance_of Array, clazz.clusters
+    assert !clazz.clusters.empty?
+    assert_not_nil clazz.default_cluster
   end
 
 
@@ -81,10 +92,6 @@ class TestDdo < Test::Unit::TestCase
     @client.create_class(CLASS)
     assert_nothing_thrown do @client.create_property(CLASS, 'prop1', :integer); end
     clazz = @client.get_class(CLASS)
-    assert_nothing_thrown do clazz.properties; end
-    assert_instance_of Array, clazz.properties
-    assert_nothing_thrown do clazz.property(:prop1); end
-    assert_raise ArgumentError do clazz.property(:unknown_prop); end
     assert_equal 'INTEGER', clazz.property(:prop1)['type']
 
     # already exist
