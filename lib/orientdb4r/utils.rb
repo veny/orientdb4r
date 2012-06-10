@@ -3,6 +3,8 @@ module Orientdb4r
   module Utils
 
     def verify_options(options, pattern)
+      raise ArgumentError, 'options cannot be nil' if options.nil?
+
       # unknown key?
       options.keys.each do |k|
         raise ArgumentError, "unknow option: #{k}" unless pattern.keys.include? k
@@ -11,6 +13,13 @@ module Orientdb4r
       pattern.each do |k,v|
         raise ArgumentError, "missing mandatory option: #{k}" if v == :mandatory and !options.keys.include? k
       end
+      # option in a set of allowed values
+      pattern.each do |k,v|
+        if v.instance_of? Array
+          raise ArgumentError, "value '#{options[k]}' not in #{v.inspect}, key=#{k}" unless v.include?(options[k])
+        end
+      end
+
       options
     end
 
