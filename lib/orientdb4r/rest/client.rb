@@ -91,8 +91,10 @@ module Orientdb4r
       response = @resource["connect/#{@database}"].get
       connect_info = process_response(response, :mode => :strict)
       clazz = connect_info['classes'].select { |i| i['name'] == name }
-      raise ArgumentError, "class not found, name=#{name}" if 1 != clazz.size
-      clazz[0]
+      raise ArgumentError, "class not found, name=#{name}" unless 1 == clazz.size
+      rslt = clazz[0]
+      rslt.extend Orientdb4r::OClass
+      rslt
     end
 
     def query(sql) #:nodoc:
