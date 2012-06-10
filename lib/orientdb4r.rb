@@ -8,10 +8,11 @@ require 'orientdb4r/version'
 # This module represents the entry point for using the Ruby OrientDB client.
 module Orientdb4r
 
-  autoload :Utils,        'orientdb4r/utils'
-  autoload :Client,       'orientdb4r/client'
-  autoload :RestClient,   'orientdb4r/rest/client'
-  autoload :OClass,       'orientdb4r/rest/oclass'
+  autoload :Utils,          'orientdb4r/utils'
+  autoload :Client,         'orientdb4r/client'
+  autoload :RestClient,     'orientdb4r/rest/client'
+  autoload :HashExtension,  'orientdb4r/rest/model'
+  autoload :OClass,         'orientdb4r/rest/model'
 
 
   class << self

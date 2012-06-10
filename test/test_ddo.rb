@@ -52,7 +52,7 @@ class TestDdo < Test::Unit::TestCase
   # CREATE CLASS
   def test_create_class
     assert_nothing_thrown do @client.create_class(CLASS); end
-    assert_nothing_thrown do @client.get_class(CLASS); end
+    assert_nothing_thrown do @client.get_class(CLASS); end # raises an Error if no class found
     # already exist
     assert_raise Orientdb4r::OrientdbError do @client.create_class(CLASS); end
 
