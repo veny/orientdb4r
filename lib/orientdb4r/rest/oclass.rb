@@ -1,7 +1,7 @@
 module Orientdb4r
 
   ###
-  # This module represent an API to OrientDB's class.
+  # This module represents API to OrientDB's class.
   module OClass
 
     ###
