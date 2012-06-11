@@ -7,7 +7,7 @@ class TestDmo < Test::Unit::TestCase
   include Orientdb4r::Utils
 
   def test_verify_options
-    opt_pattern = {:a => :mandatory, :b => :optional, :c => 'predefined', :d => [1, 2]}
+    opt_pattern = {:a => :mandatory, :b => :optional, :c => 'predefined', :d => [1, false]}
     assert_nothing_thrown do verify_options({:a => 'A', :b => 'B', :c => 'C', :d => 1}, opt_pattern); end
 
     # missing mandatory

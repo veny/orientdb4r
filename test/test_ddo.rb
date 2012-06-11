@@ -11,7 +11,6 @@ class TestDdo < Test::Unit::TestCase
 
   def initialize(params)
     super params
-
     @client = Orientdb4r.client
   end
 
@@ -21,7 +20,7 @@ class TestDdo < Test::Unit::TestCase
 
   def teardown
     # remove the testing class after each test
-    @client.drop_class(CLASS)
+    @client.drop_class(CLASS, :mode => :strict)
     @client.disconnect
   end
 
@@ -85,12 +84,23 @@ class TestDdo < Test::Unit::TestCase
 
   ###
   # DROP TABLE
-  def test_drop_table
+  def test_drop_class
+    super_clazz = "#{CLASS}Sup"
+    @client.drop_class(super_clazz); # just to be sure if previous test failed
+    @client.create_class(super_clazz);
+    @client.create_class(CLASS);
     assert_nothing_thrown do @client.drop_class(CLASS); end
-
+    assert_raise ArgumentError do @client.get_class(CLASS); end
     # the class is not visible in class list delivered by connect
     rslt = @client.connect :database => DB, :user => 'admin', :password => 'admin'
-    assert rslt['classes'].select { |i| i['name'] == CLASS }.empty?
+    assert rslt['classes'].select { |i| i.name == CLASS }.empty?
+
+    # CLASS extends super_class
+    @client.create_class(CLASS, :extends => super_clazz);
+    assert_raise Orientdb4r::OrientdbError do @client.drop_class(super_clazz, :mode => :strict); end
+    assert_nothing_thrown do @client.get_class(super_clazz); end # still there
+    @client.drop_class(CLASS);
+    assert_nothing_thrown do @client.drop_class(super_clazz, :mode => :strict); end
   end
 
 

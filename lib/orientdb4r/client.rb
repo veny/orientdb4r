@@ -79,9 +79,21 @@ module Orientdb4r
 
     ###
     # Removes a class from the schema.
-    def drop_class(name)
-      # TODO in :mode=>:strict verify if the class is no a super class
+    def drop_class(name, options={})
       raise ArgumentError, "class name is blank" if blank?(name)
+
+      # in :mode=>:strict verify if the class is no a super class
+      opt_pattern = { :mode => :nil }
+      verify_options(options, opt_pattern)
+      unless :strict == options[:mode]
+        response = @resource["connect/#{@database}"].get
+        connect_info = process_response(response, :mode => :strict)
+        children = connect_info['classes'].select { |i| i['superClass'] == name }
+        unless children.empty?
+          raise OrientdbError, "class is super-class, cannot be deleted, name=#{name}"
+        end
+      end
+
       command "DROP CLASS #{name}"
     end
 

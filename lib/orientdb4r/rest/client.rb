@@ -31,6 +31,9 @@ module Orientdb4r
       begin
         response = @resource["connect/#{@database}"].get
         rslt = process_response(response, :mode => :strict)
+
+        decorate_classes_with_model(rslt['classes'])
+
         @connected = true
       rescue ::RestClient::Exception => e
         @connected = false
@@ -90,8 +93,10 @@ module Orientdb4r
       # workaround - use metadate delivered by 'connect'
       response = @resource["connect/#{@database}"].get
       connect_info = process_response(response, :mode => :strict)
+
       classes = connect_info['classes'].select { |i| i['name'] == name }
       raise ArgumentError, "class not found, name=#{name}" unless 1 == classes.size
+      decorate_classes_with_model(classes)
       clazz = classes[0]
       clazz.extend Orientdb4r::HashExtension
       clazz.extend Orientdb4r::OClass
@@ -101,6 +106,8 @@ module Orientdb4r
           prop.extend Orientdb4r::Property
         end
       end
+
+
       clazz
     end
 
@@ -121,6 +128,8 @@ module Orientdb4r
         raise process_error e, options.select { |k,v| k.to_s.start_with? 'http_code' }
       end
     end
+
+    # ------------------------------------------------------------------ Helpers
 
     private
 
@@ -167,6 +176,19 @@ module Orientdb4r
         code = "http_code_#{error.http_code}".to_sym
         msg = messages.include?(code) ? "#{messages[code]}, cause = " : ''
         OrientdbError.new "#{msg}#{error.to_s}"
+      end
+
+      def decorate_classes_with_model(classes)
+        classes.each do |clazz|
+          clazz.extend Orientdb4r::HashExtension
+          clazz.extend Orientdb4r::OClass
+            unless clazz['properties'].nil? # there can be a class without properties
+              clazz.properties.each do |prop|
+                prop.extend Orientdb4r::HashExtension
+                prop.extend Orientdb4r::Property
+            end
+          end
+        end
       end
 
   end
