@@ -82,10 +82,10 @@ module Orientdb4r
     def drop_class(name, options={})
       raise ArgumentError, "class name is blank" if blank?(name)
 
-      # in :mode=>:strict verify if the class is no a super class
+      # :mode=>:strict forbids to drop a class that is a super class for other one
       opt_pattern = { :mode => :nil }
       verify_options(options, opt_pattern)
-      unless :strict == options[:mode]
+      if :strict == options[:mode]
         response = @resource["connect/#{@database}"].get
         connect_info = process_response(response, :mode => :strict)
         children = connect_info['classes'].select { |i| i['superClass'] == name }

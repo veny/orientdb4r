@@ -90,7 +90,7 @@ class TestDdo < Test::Unit::TestCase
     @client.create_class(super_clazz);
     @client.create_class(CLASS);
     assert_nothing_thrown do @client.drop_class(CLASS); end
-    assert_raise ArgumentError do @client.get_class(CLASS); end
+    assert_raise ArgumentError do @client.get_class(CLASS); end # no info more
     # the class is not visible in class list delivered by connect
     rslt = @client.connect :database => DB, :user => 'admin', :password => 'admin'
     assert rslt['classes'].select { |i| i.name == CLASS }.empty?
