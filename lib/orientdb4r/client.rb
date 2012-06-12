@@ -119,6 +119,16 @@ module Orientdb4r
       end
     end
 
+
+    ###
+    # Retrieve information about the connected OrientDB Server.
+    # Enables additional authentication to the server with an account
+    # that can access the 'server.info' resource.
+    def server(options={})
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+
     protected
 
       ###

@@ -45,7 +45,7 @@ class TestDatabase < Test::Unit::TestCase
 
   ###
   # CREATE DATABASE
-  # Temporary disabled bacause of unknown way how to drop a new created datatabse.
+  # Temporary disabled because of unknown way how to drop a new created datatabse.
   def xtest_create_database
     @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     # creating an existing DB
@@ -61,6 +61,21 @@ class TestDatabase < Test::Unit::TestCase
     # Default users are: admin, reader, writer
     @client.connect :database => 'UniT', :user => 'admin', :password => 'admin'
     #@client.command "DROP DATABASE UniT" : NOT WORKING now
+  end
+
+
+  ###
+  # SERVER info
+  # Temporary disabled because of dependency to password of 'root' account
+  def xtest_server
+    # admin/admin has not 'server.info' resource access in standard installation
+    assert_raise Orientdb4r::OrientdbError do @client.server :user => 'admin', :password => 'admin'; end
+
+    assert_nothing_thrown do @client.server :user => 'root', :password => 'root'; end
+    rslt = @client.server :user => 'root', :password => 'root'
+    assert_instance_of Hash, rslt
+    assert rslt.include? 'connections'
+    assert_not_nil rslt['connections']
   end
 
 end

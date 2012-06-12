@@ -57,6 +57,8 @@ module Orientdb4r
         Orientdb4r::logger.warn '401 Unauthorized - bug in disconnect?'
       ensure
         @connected = false
+        @user = nil
+        @password = nil
       end
     end
 
@@ -111,13 +113,18 @@ module Orientdb4r
       clazz
     end
 
+
     def query(sql) #:nodoc:
+      raise ArgumentError, 'query is blank' if blank? sql
+
       response = @resource["query/#{@database}/sql/#{URI.escape(sql)}"].get
       rslt = process_response(response)
       rslt['result']
     end
 
+
     def command(sql, options={}) #:nodoc:
+      raise ArgumentError, 'command is blank' if blank? sql
       begin
 #puts "REQ #{sql}"
         response = @resource["command/#{@database}/sql/#{URI.escape(sql)}"].post ''
@@ -128,6 +135,25 @@ module Orientdb4r
         raise process_error e, options.select { |k,v| k.to_s.start_with? 'http_code' }
       end
     end
+
+
+    def server(options={}) #:nodoc:
+      options_pattern = { :user => :optional, :password => :optional }
+      verify_options(options, options_pattern)
+
+
+      u = options.include?(:user) ? options[:user] : user
+      p = options.include?(:password) ? options[:password] : password
+      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
+      begin
+        response = resource['server'].get
+      rescue ::RestClient::Exception => e
+        raise process_error e, \
+          :http_code_403 => 'forbidden operation (insufficient rights?)'
+      end
+      process_response(response)
+    end
+
 
     # ------------------------------------------------------------------ Helpers
 
