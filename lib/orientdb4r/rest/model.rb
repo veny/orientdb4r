@@ -106,4 +106,35 @@ module Orientdb4r
 
   end
 
+
+  ###
+  # This module represents API to document metadata.
+  module DocumentMetadata
+
+    ###
+    # Gets the document class.
+    def doc_class
+      self['@class']
+    end
+
+    ###
+    # Gets the document ID.
+    def doc_rid
+      self['@rid'][1..-1]
+    end
+
+    ###
+    # Gets the document version.
+    def doc_version
+      self['@version']
+    end
+
+    ###
+    # Gets the document type.
+    def doc_type
+      self['@type']
+    end
+
+  end
+
 end

@@ -155,6 +155,26 @@ module Orientdb4r
     end
 
 
+    # ----------------------------------------------------------------- DOCUMENT
+
+    def create_document(doc)
+      response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
+      rid = process_response(response)
+      raise OrientdbError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
+      # remove the '#' prefix
+      rid[1..-1]
+    end
+
+
+    def get_document(id) #:nodoc:
+      raise ArgumentError, 'blank ID' if blank? id
+
+      response = @resource["document/#{@database}/#{id}"].get
+      rslt = process_response(response)
+      rslt.extend Orientdb4r::DocumentMetadata
+      rslt
+    end
+
     # ------------------------------------------------------------------ Helpers
 
     private

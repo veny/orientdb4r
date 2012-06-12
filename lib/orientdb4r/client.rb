@@ -9,11 +9,14 @@ module Orientdb4r
       @connected = false
     end
 
+    # --------------------------------------------------------------- CONNECTION
+
     ###
     # Connects client to the server.
     def connect options
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
+
 
     ###
     # Disconnects client from the server.
@@ -21,11 +24,23 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
     ###
     # Gets flag whenever the client is connected or not.
     def connected?
       @connected
     end
+
+
+    ###
+    # Retrieve information about the connected OrientDB Server.
+    # Enables additional authentication to the server with an account
+    # that can access the 'server.info' resource.
+    def server(options={})
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+    # ----------------------------------------------------------------- DATABASE
 
     ###
     # Creates a new database.
@@ -35,11 +50,14 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
     ###
     # Gets informations about requested class.
     def get_class(name)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
+
+    # ---------------------------------------------------------------------- SQL
 
     ###
     # Executes a query against the database.
@@ -47,11 +65,14 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
     ###
     # Executes a command against the database.
     def command(sql, options={})
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
+
+    # -------------------------------------------------------------------- CLASS
 
     ###
     # Creates a new class in the schema.
@@ -77,6 +98,7 @@ module Orientdb4r
       end
     end
 
+
     ###
     # Removes a class from the schema.
     def drop_class(name, options={})
@@ -96,6 +118,7 @@ module Orientdb4r
 
       command "DROP CLASS #{name}"
     end
+
 
     ###
     # Creates a new property in the schema.
@@ -119,12 +142,19 @@ module Orientdb4r
       end
     end
 
+    # ----------------------------------------------------------------- DOCUMENT
 
     ###
-    # Retrieve information about the connected OrientDB Server.
-    # Enables additional authentication to the server with an account
-    # that can access the 'server.info' resource.
-    def server(options={})
+    # Create a new document.
+    # Returns the Record-id assigned.
+    def create_document(doc)
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+
+    ###
+    # Retrieves a document by given ID.
+    def get_document(id)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
