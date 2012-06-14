@@ -154,7 +154,7 @@ module Orientdb4r
 
     ###
     # Retrieves a document by given ID.
-    def get_document(id)
+    def get_document(rid)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 

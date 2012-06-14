@@ -35,12 +35,12 @@ module Orientdb4r
         decorate_classes_with_model(rslt['classes'])
 
         @connected = true
+      rescue Errno::ECONNREFUSED
+        raise ConnectionError, 'connection refused'
       rescue ::RestClient::Exception => e
         @connected = false
-        raise process_error e, :http_code_401 => 'connect failed (bad credentials?)'
+        raise process_error e, 'connect failed (bad credentials?)' if 401 == e.http_code
       rescue Exception => e
-        Orientdb4r::logger.error e.message
-        Orientdb4r::logger.error e.backtrace.inspect
         @connected = false
         raise e
       end
@@ -161,15 +161,22 @@ module Orientdb4r
       response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
       rid = process_response(response)
       raise OrientdbError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
-      # remove the '#' prefix
-      rid[1..-1]
+      rid
     end
 
 
-    def get_document(id) #:nodoc:
-      raise ArgumentError, 'blank ID' if blank? id
+    def get_document(rid) #:nodoc:
+      raise ArgumentError, 'blank RID' if blank? rid
+      # remove the '#' prefix
+      rid = rid[1..-1] if rid.start_with? '#'
 
-      response = @resource["document/#{@database}/#{id}"].get
+      begin
+        response = @resource["document/#{@database}/#{rid}"].get
+      rescue ::RestClient::Exception => e
+        raise process_error e, \
+          :http_code_500 => "failed to get document, rid=##{rid}"
+      end
+      process_response(response)
       rslt = process_response(response)
       rslt.extend Orientdb4r::DocumentMetadata
       rslt

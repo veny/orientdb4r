@@ -120,7 +120,7 @@ module Orientdb4r
     ###
     # Gets the document ID.
     def doc_rid
-      self['@rid'][1..-1]
+      self['@rid']
     end
 
     ###

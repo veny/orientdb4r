@@ -37,6 +37,11 @@ class TestDmo < Test::Unit::TestCase
     assert_equal rid, doc.doc_rid
     assert_equal 0, doc.doc_version
     assert_equal 'd', doc.doc_type
+
+    rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'
+    doc = @client.get_document rid1
+puts doc
+
   end
 
 
