@@ -149,9 +149,13 @@ module Orientdb4r
     # ----------------------------------------------------------------- DOCUMENT
 
     def create_document(doc)
-      response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
+      begin
+        response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
+      rescue
+        raise DataError
+      end
       rid = process_response(response)
-      raise OrientdbError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
+      raise ArgumentError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
       rid
     end
 

@@ -56,6 +56,11 @@ module Orientdb4r
   # Error raised to inform that an object identified by RID cannot be get.
   class NotFoundError < OrientdbError; end
 
+  ###
+  # Error indicating that manipulation against the given data resulted in some illegal operation,
+  # mismatched types or incorrect cardinality.
+  class DataError < OrientdbError; end
+
 end
 
 
