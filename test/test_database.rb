@@ -17,17 +17,24 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # CONNECT
   def test_connect
+    assert_nothing_thrown do @client.connect :database => 'temp', :user => 'admin', :password => 'admin'; end
     rslt = @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
     assert_instance_of Hash, rslt
     assert rslt.size > 0
     assert rslt.include? 'classes'
 
+    # connection refused
+    client = Orientdb4r.client :port => 2840, :instance => :new
+    assert_raise Orientdb4r::ConnectionError do
+      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    end
+
     # bad DB name
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ConnectionError do
       @client.connect :database => 'unknown_db', :user => 'admin', :password => 'admin'
     end
     # bad credentials
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ConnectionError do
       @client.connect :database => 'temp', :user => 'admin1', :password => 'admin'
     end
   end

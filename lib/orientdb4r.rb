@@ -20,7 +20,14 @@ module Orientdb4r
 
     ###
     # Gets a new database client or an existing for the current thread.
+    # === options
+    #  * :force => true
     def client options={}
+      if :new == options[:instance]
+        options.delete :instance
+        return RestClient.new options
+      end
+
       Thread.current[:orientdb_client] ||= RestClient.new options
     end
 
@@ -59,19 +66,6 @@ Orientdb4r::logger.level = Logger::INFO
 Orientdb4r::logger.info \
   "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"
 
-def read_config_file
-  File.open('nesmysl') do |f|
-    f.readlines
-  end
-end
 
-def load_config
-  begin
-    lines = read_config_file
-    puts 'CCCCCCCCCCCCCC'
-  rescue
-    raise Orientdb4r::OrientdbError
-  end
-end
-
-load_config
+#client = Orientdb4r.client
+#client.connect :database => 'temp', :user => 'admin', :password => 'admin'

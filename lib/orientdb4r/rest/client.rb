@@ -35,14 +35,9 @@ module Orientdb4r
         decorate_classes_with_model(rslt['classes'])
 
         @connected = true
-      rescue Errno::ECONNREFUSED
-        raise ConnectionError, 'connection refused'
-      rescue ::RestClient::Exception => e
+      rescue
         @connected = false
-        raise process_error e, 'connect failed (bad credentials?)' if 401 == e.http_code
-      rescue Exception => e
-        @connected = false
-        raise e
+        raise ConnectionError
       end
       rslt
     end
