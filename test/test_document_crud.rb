@@ -3,7 +3,7 @@ require 'orientdb4r'
 
 ###
 # This class tests Data Manipulation Operarions.
-class TestDmo < Test::Unit::TestCase
+class TestDocumentCrud < Test::Unit::TestCase
   include Orientdb4r::Utils
 
   CLASS = 'testing'
@@ -39,9 +39,7 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 'd', doc.doc_type
 
     rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'
-    doc = @client.get_document rid1
-puts doc
-
+    assert_raise Orientdb4r::NotFoundError do @client.get_document rid1; end
   end
 
 

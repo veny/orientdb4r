@@ -68,7 +68,7 @@ module Orientdb4r
 
     ###
     # Executes a command against the database.
-    def command(sql, options={})
+    def command(sql)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
@@ -87,7 +87,7 @@ module Orientdb4r
 
       drop_class name if options[:force]
 
-      command sql, :http_code_500 => 'failed to create class (exists already, bad supperclass?)'
+      command sql
 
       if block_given?
         proxy = Orientdb4r::Utils::Proxy.new(self, name)
@@ -133,7 +133,7 @@ module Orientdb4r
       verify_options(options, opt_pattern)
 
       cmd = "CREATE PROPERTY #{clazz}.#{property} #{type.to_s}"
-      command cmd, :http_code_500 => 'failed to create property (exists already?)'
+      command cmd
 
       unless options.empty?
         options.each do |k,v|

@@ -70,11 +70,8 @@ module Orientdb4r
       resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
         response = resource["database/#{options[:database]}/#{options[:type]}"].post ''
-      rescue ::RestClient::Exception => e
-        raise process_error e, \
-          :http_code_403 => 'forbidden operation (insufficient rights?)', \
-          :http_code_500 => 'failed to create database (exists already?)'
-
+      rescue
+        raise OrientdbError
       end
       process_response(response)
     end
@@ -118,7 +115,7 @@ module Orientdb4r
     end
 
 
-    def command(sql, options={}) #:nodoc:
+    def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
       begin
 #puts "REQ #{sql}"
@@ -126,8 +123,8 @@ module Orientdb4r
         rslt = process_response(response)
         rslt
 #puts "RESP #{response.code}"
-      rescue Exception => e
-        raise process_error e, options.select { |k,v| k.to_s.start_with? 'http_code' }
+      rescue
+        raise OrientdbError
       end
     end
 
@@ -142,9 +139,8 @@ module Orientdb4r
       resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
         response = resource['server'].get
-      rescue ::RestClient::Exception => e
-        raise process_error e, \
-          :http_code_403 => 'forbidden operation (insufficient rights?)'
+      rescue
+        raise OrientdbError
       end
       process_response(response)
     end
@@ -167,9 +163,8 @@ module Orientdb4r
 
       begin
         response = @resource["document/#{@database}/#{rid}"].get
-      rescue ::RestClient::Exception => e
-        raise process_error e, \
-          :http_code_500 => "failed to get document, rid=##{rid}"
+      rescue
+        raise NotFoundError
       end
       process_response(response)
       rslt = process_response(response)
@@ -218,12 +213,6 @@ module Orientdb4r
           end
 
         rslt
-      end
-
-      def process_error(error, messages={})
-        code = "http_code_#{error.http_code}".to_sym
-        msg = messages.include?(code) ? "#{messages[code]}, cause = " : ''
-        OrientdbError.new "#{msg}#{error.to_s}"
       end
 
       def decorate_classes_with_model(classes)
