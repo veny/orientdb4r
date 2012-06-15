@@ -176,6 +176,23 @@ module Orientdb4r
       rslt
     end
 
+
+    def update_document(doc) #:nodoc:
+      raise ArgumentError, 'document is nil' if doc.nil?
+      raise ArgumentError, 'document has no RID' if doc.doc_rid.nil?
+      raise ArgumentError, 'document has no version' if doc.doc_version.nil?
+
+      rid = doc.delete '@rid'
+      rid = rid[1..-1] if rid.start_with? '#'
+
+      begin
+        @resource["document/#{@database}/#{rid}"].put doc.to_json, :content_type => 'application/json'
+      rescue
+        raise DataError
+      end
+      # empty http response
+    end
+
     # ------------------------------------------------------------------ Helpers
 
     private

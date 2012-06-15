@@ -28,7 +28,7 @@ class TestDocumentCrud < Test::Unit::TestCase
 
 
   ###
-  # GET
+  # CREATE
   def test_create_document
     assert_nothing_thrown do @client.create_document( { '@class' => CLASS, 'prop1' => 99, 'prop2' => 'ipsum lorem' }); end
     rid = @client.create_document({ '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
@@ -84,5 +84,38 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid1; end
   end
 
+  ###
+  # UPDATE
+  def test_update_document
+    rid = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
+    doc = @client.get_document rid
+
+    doc['prop1'] = 2
+    doc['prop2'] = 'unit'
+    assert_nothing_thrown do @client.update_document doc; end
+    doc = @client.get_document rid
+    assert_equal 2, doc['prop1']
+    assert_equal 'unit', doc['prop2']
+
+    # bad version
+    doc = @client.get_document rid
+    doc['@version'] = 2
+    assert_raise Orientdb4r::DataError do @client.update_document doc; end
+
+    # class cannot be changed
+    doc = @client.get_document rid
+    doc['@class'] = 'OUser'
+    assert_nothing_thrown do @client.update_document doc; end
+    assert_equal CLASS, @client.get_document(rid).doc_class
+
+    # no mandatory property
+    doc = @client.get_document rid
+    doc.delete 'prop2'
+    assert_raise Orientdb4r::DataError do @client.update_document doc; end
+    # notNull is null, or lesser/bigger
+    doc = @client.get_document rid
+    doc['prop1'] = nil
+    assert_raise Orientdb4r::DataError do @client.update_document doc; end
+  end
 
 end
