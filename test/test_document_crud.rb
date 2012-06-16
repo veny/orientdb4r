@@ -2,7 +2,7 @@ require 'test/unit'
 require 'orientdb4r'
 
 ###
-# This class tests Data Manipulation Operarions.
+# This class tests CRUD operarions on document.
 class TestDocumentCrud < Test::Unit::TestCase
   include Orientdb4r::Utils
 
