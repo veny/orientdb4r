@@ -170,7 +170,6 @@ module Orientdb4r
       rescue
         raise NotFoundError
       end
-      process_response(response)
       rslt = process_response(response)
       rslt.extend Orientdb4r::DocumentMetadata
       rslt
@@ -187,6 +186,21 @@ module Orientdb4r
 
       begin
         @resource["document/#{@database}/#{rid}"].put doc.to_json, :content_type => 'application/json'
+      rescue
+        raise DataError
+      end
+      # empty http response
+    end
+
+
+    def delete_document(rid) #:nodoc:
+      raise ArgumentError, 'blank RID' if blank? rid
+      # remove the '#' prefix
+      rid = rid[1..-1] if rid.start_with? '#'
+
+      begin
+        response = @resource["document/#{@database}/#{rid}"].delete
+        puts "DELETE '#{response}'"
       rescue
         raise DataError
       end

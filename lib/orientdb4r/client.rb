@@ -166,6 +166,13 @@ module Orientdb4r
     end
 
 
+    ###
+    # Deletes an existing document.
+    def delete_document(rid)
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+
     protected
 
       ###

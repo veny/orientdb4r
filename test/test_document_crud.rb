@@ -80,6 +80,7 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_equal 'text', doc['prop2']
     assert_nil doc['unknown_property']
 
+    # not existing RID
     rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid1; end
   end
@@ -116,6 +117,19 @@ class TestDocumentCrud < Test::Unit::TestCase
     doc = @client.get_document rid
     doc['prop1'] = nil
     assert_raise Orientdb4r::DataError do @client.update_document doc; end
+  end
+
+
+  ###
+  # DELETE
+  def test_delete_document
+    rid = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
+    doc = @client.get_document rid
+    assert_not_nil doc
+
+    # already deleted
+    @client.delete_document rid
+    assert_raise Orientdb4r::NotFoundError do @client.get_document rid; end
   end
 
 end
