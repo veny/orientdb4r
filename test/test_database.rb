@@ -46,7 +46,7 @@ class TestDatabase < Test::Unit::TestCase
     @client.disconnect
     assert !@client.connected?
     # unable to query after disconnect
-    assert_raise Orientdb4r::OrientdbError do @client.query 'SELECT FROM OUser'; end
+    assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end
   end
 
 

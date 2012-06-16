@@ -178,7 +178,7 @@ module Orientdb4r
       ###
       # Asserts if the client is connected and raises an error if not.
       def assert_connected
-        raise OrientdbError, "not connected" unless @connected
+        raise ConnectionError, 'not connected' unless @connected
       end
 
       ###
