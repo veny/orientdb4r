@@ -60,9 +60,27 @@ module Orientdb4r
         block.call
       end
 
-    end
+    end # Proxy
 
-  end
+
+    class DataGenerator
+
+      def initialize
+        @worlds = IO.readlines('/usr/share/dict/words')
+        0.upto(@worlds.size - 1) do |i|
+          word = @worlds[i]
+          word.strip!
+          idx = word.index("'")
+          word = word[0..(idx - 1)] unless idx.nil?
+          @worlds[i] = word
+        end
+        @worlds.uniq
+        Orientdb4r::logger.info "DataGenerator: #{@worlds.size} words"
+      end
+
+    end # DataGenerator
+
+  end # Utils
 
 
   # TODO extend it to work with already defined methods ('before :foo, :baz' after method definition)

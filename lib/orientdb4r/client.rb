@@ -128,19 +128,46 @@ module Orientdb4r
       raise ArgumentError, "property name is blank" if blank?(property)
       opt_pattern = {
         :mandatory => :optional , :notnull => :optional, :min => :optional, :max => :optional,
-        :regexp =>  :optional, :custom => :optional
+        :regexp =>  :optional, :custom => :optional, :linked_class => :optional
       }
       verify_options(options, opt_pattern)
 
       cmd = "CREATE PROPERTY #{clazz}.#{property} #{type.to_s}"
+      # link?
+      if [:link, :linklist, :linkset, :linkmap].include? type.to_s.downcase.to_sym
+        raise ArgumentError, "defined linked-type, but not linked-class" unless options.include? :linked_class
+        cmd << " #{options[:linked_class]}"
+      end
       command cmd
 
+      # ALTER PROPERTY ...
+      options.delete :linked_class # it's not option for ALTER
       unless options.empty?
         options.each do |k,v|
           command "ALTER PROPERTY #{clazz}.#{property} #{k.to_s.upcase} #{v}"
         end
       end
     end
+
+
+    ###
+    # Creates links between two or more records of type Document.
+    # You need to create the class before.
+#    def create_link(clazz, options={})
+#      raise ArgumentError, "class name is blank" if blank?(clazz)
+#      opt_pattern = {
+#        :name => :optional, :type => :optional,
+#        :source_property => :mandatory, :destination_class => :mandatory, :destination_property => :mandatory
+#      }
+#      verify_options(options, opt_pattern)
+#
+#      cmd = 'CREATE LINK '
+#      cmd << "#{options[:name]} " if options.include? :name
+#      cmd << "TYPE #{options[:type]} " if options.include? :type
+#      cmd << "FROM #{clazz}.#{options[:source_property]} TO #{options[:destination_class]}.#{options[:destination_property]}"
+#puts cmd
+#      command cmd
+#    end
 
     # ----------------------------------------------------------------- DOCUMENT
 

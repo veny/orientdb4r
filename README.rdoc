@@ -73,7 +73,7 @@ Tested on
 
    rake test
 
-Start an instance of OrientDB  (on localhost with default port and 'admin/admin' account) before running.
+Start an instance of OrientDB (on localhost with default port and 'admin/admin' account) before running.
 
 == AUTHOR
 

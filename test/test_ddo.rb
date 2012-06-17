@@ -113,6 +113,22 @@ class TestDdo < Test::Unit::TestCase
     assert_equal 'INTEGER', clazz.property(:prop1)['type']
 
     # already exist
+    assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
+  end
+
+
+  ###
+  # CREATE LINK
+  def test_create_link
+    @client.create_class(CLASS)
+@client.create_property(CLASS, 'userx', :linkset, :linked_class => 'OUser')
+#    assert_nothing_thrown do @client.create_link(CLASS, 'user', :linkset, :linked_class => 'OUser'
+#        :source_property => 'xxx', :destination_class => 'OUser', :destination_property => 'Name'); end
+    clazz = @client.get_class(CLASS)
+puts clazz
+#    assert_equal 'INTEGER', clazz.property(:prop1)['type']
+
+    # already exist
 #    assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
   end
 
