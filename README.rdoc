@@ -47,11 +47,17 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   client.drop_class CLASS
   client.disconnect
 
+
 == INSTALL
 
   > sudo gem install orientdb4r
 
 * gem published on http://rubygems.org/gems/orientdb4r
+
+=== Important Upgrade Notice
+2012-06-17 [v0.2.0]: Client#get_class raises Orientdb4r::NotFoundError instead of ArgumentError
+
+
 
 == FEATURES/PROBLEMS
 
