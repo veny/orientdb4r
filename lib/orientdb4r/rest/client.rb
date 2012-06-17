@@ -89,7 +89,7 @@ module Orientdb4r
       connect_info = process_response(response, :mode => :strict)
 
       classes = connect_info['classes'].select { |i| i['name'] == name }
-      raise ArgumentError, "class not found, name=#{name}" unless 1 == classes.size
+      raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
       decorate_classes_with_model(classes)
       clazz = classes[0]
       clazz.extend Orientdb4r::HashExtension
