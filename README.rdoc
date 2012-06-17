@@ -69,6 +69,12 @@ Tested on
 * Ruby 1.9.3
 * OrientDB 1.0.0
 
+== TEST
+
+   rake test
+
+Start an instance of OrientDB  (on localhost with default port and 'admin/admin' account) before running.
+
 == AUTHOR
 
 * vaclav.sykora@gmail.com
