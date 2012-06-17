@@ -127,8 +127,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     doc = @client.get_document rid
     assert_not_nil doc
 
+    assert_nothing_thrown do @client.delete_document rid; end
     # already deleted
-    @client.delete_document rid
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid; end
   end
 
