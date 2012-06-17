@@ -69,7 +69,7 @@ Tested on
 * Ruby 1.9.3
 * OrientDB 1.0.0
 
-== TEST
+== TESTS
 
    rake test
 
