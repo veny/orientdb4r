@@ -94,6 +94,11 @@ module Orientdb4r
         def proxy.property(property, type, options={})
           self.target.send :create_property, self.context, property, type, options
         end
+        def proxy.link(property, type, linked_class, options={})
+          raise ArgumentError, "type has to be a linked-type, given=#{type}" unless type.to_s.start_with? 'link'
+          options[:linked_class] = linked_class
+          self.target.send :create_property, self.context, property, type, options
+        end
         yield proxy
       end
     end
