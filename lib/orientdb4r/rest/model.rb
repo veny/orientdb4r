@@ -93,6 +93,12 @@ module Orientdb4r
     end
 
     ###
+    # Gets linked class if the property is a link.
+    def linked_class
+      self['linkedClass']
+    end
+
+    ###
     # Gets the minimal allowed value.
     def min
       self['min']

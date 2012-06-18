@@ -110,7 +110,8 @@ class TestDdo < Test::Unit::TestCase
     @client.create_class(CLASS)
     assert_nothing_thrown do @client.create_property(CLASS, 'prop1', :integer); end
     clazz = @client.get_class(CLASS)
-    assert_equal 'INTEGER', clazz.property(:prop1)['type']
+    assert_equal 'INTEGER', clazz.property(:prop1).type
+    assert_nil clazz.property(:prop1).linked_class
 
     # already exist
     assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
@@ -118,18 +119,24 @@ class TestDdo < Test::Unit::TestCase
 
 
   ###
-  # CREATE LINK
-  def test_create_link
+  # CREATE PROPERTY (linked-type)
+  def test_create_linkedtype
     @client.create_class(CLASS)
-@client.create_property(CLASS, 'userx', :linkset, :linked_class => 'OUser')
-#    assert_nothing_thrown do @client.create_link(CLASS, 'user', :linkset, :linked_class => 'OUser'
-#        :source_property => 'xxx', :destination_class => 'OUser', :destination_property => 'Name'); end
+    assert_nothing_thrown do @client.create_property(CLASS, 'user', :linkset, :linked_class => 'OUser'); end
     clazz = @client.get_class(CLASS)
-puts clazz
-#    assert_equal 'INTEGER', clazz.property(:prop1)['type']
+    assert_equal 'LINKSET', clazz.property(:user).type
+    assert_equal 'OUser', clazz.property(:user).linked_class
+#puts clazz
+
+    # unknow linked-class
+    assert_raise Orientdb4r::OrientdbError do
+      @client.create_property(CLASS, 'user2', :linkset, :linked_class => 'UnknownClass')
+    end
 
     # already exist
-#    assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
+    assert_raise Orientdb4r::OrientdbError do
+      @client.create_property(CLASS, 'user', :linkset, :linked_class => 'OUser');
+    end
   end
 
 
