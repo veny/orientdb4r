@@ -31,21 +31,24 @@ class TestDmo < Test::Unit::TestCase
 
   ###
   # INSERT INTO
-  def test_insert
+  def xtest_insert
     assert_nothing_thrown do
       1.upto(10) do |i|
-        @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, '#{random_string}', #{@admin['@rid']})"
+        @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, '#{random_string}', [#{@admin['@rid']}])"
       end
     end
 
-    assert_equal 10, @client.query("SELECT count(*) FROM #{CLASS}")[0]['count'].to_i
+    entries = @client.query("SELECT FROM #{CLASS}")
+    assert_equal 10, entries.size
+    assert_equal 10, entries.select { |e| e if e['prop1'] <= 10 }.size
+    assert_equal 10, entries.select { |e| e if e['friends'].size == 1 }.size
 
     # insert more users into LINKSET
-    urids = @client.query('SELECT FROM OUser').collect { |u| u['@rid'] }.join ','
+    urids = @client.query('SELECT FROM OUser').collect { |u| u['@rid'] }
     assert_nothing_thrown do
-      rid = @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (1, 'linkset', [#{urids}])"
-      puts @client.query("SELECT FROm #{CLASS} WHERE prop2 = 'linkset'")[0]
+      @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (1, 'linkset', [#{urids.join(',')}])"
     end
+    assert_equal urids.size, @client.query("SELECT FROM #{CLASS} WHERE prop2 = 'linkset'")[0]['friends'].size
 
   end
 
@@ -54,10 +57,19 @@ class TestDmo < Test::Unit::TestCase
   # SELECT
   def test_query
     1.upto(10) do |i|
-      @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, 'string#{i}', #{@admin['@rid']})"
+      @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, 'string#{i}', [#{@admin['@rid']}])"
     end
 
-    puts @client.query("SELECT FROM #{CLASS}")
+    assert_equal 10, @client.query("SELECT FROM #{CLASS}").size
+    assert_equal 1, @client.query("SELECT FROM #{CLASS} WHERE prop1 = 1").size
+    assert_equal 0, @client.query("SELECT FROM #{CLASS} WHERE prop1 = 11").size
+    # graph
+    rid = @client.query("SELECT FROM #{CLASS} WHERE prop1 = 1")[0]['@rid']
+    gr = @client.query("SELECT FROM (TRAVERSE * FROM #{rid})")
+    assert_equal 3, gr.size # # entries: testing, OUser, ORole
+    assert_equal 1, gr.select { |e| e if e['@class'] == CLASS }.size
+    assert_equal 1, gr.select { |e| e if e['@class'] == 'OUser' }.size
+    assert_equal 1, gr.select { |e| e if e['@class'] == 'ORole' }.size
   end
 
 end
