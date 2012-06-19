@@ -109,7 +109,7 @@ module Orientdb4r
     def query(sql) #:nodoc:
       raise ArgumentError, 'query is blank' if blank? sql
 
-      response = @resource["query/#{@database}/sql/#{URI.escape(sql)}"].get
+      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}"].get
       rslt = process_response(response)
       rslt['result']
     end
@@ -119,7 +119,7 @@ module Orientdb4r
       raise ArgumentError, 'command is blank' if blank? sql
       begin
 #puts "REQ #{sql}"
-        response = @resource["command/#{@database}/sql/#{URI.escape(sql)}"].post ''
+        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
         rslt = process_response(response)
         rslt
 #puts "RESP #{response.code}"

@@ -2,7 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.2.1', '2012-06-18', "Fixed linked property definition"],
+    ['0.2.1', '2012-06-19', "Fixed linked property definition"],
     ['0.2.0', '2012-06-12', "Introduces document's CRUD operations"],
     ['0.1.2', '2012-06-10', 'Introduces new OClass module'],
     ['0.1.1', '2012-06-08', 'First working version (including unit tests) released at github.com'],
