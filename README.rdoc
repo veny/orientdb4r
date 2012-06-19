@@ -55,6 +55,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 * gem published on http://rubygems.org/gems/orientdb4r
 
 === Important Upgrade Notice
+2012-06-19 [v0.2.1]: Client#create_class - parameter given to a block has new method 'link' to define a linked property
 2012-06-17 [v0.2.0]: Client#get_class raises Orientdb4r::NotFoundError instead of ArgumentError
 
 
