@@ -15,33 +15,35 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
 
-
   client.create_class(CLASS) do |c|
-    c.property 'prop1', :integer
-    c.property 'prop2', :string, :mandatory => true, :notnull => :true, :min => 1, :max => 99
+    c.property 'prop1', :integer, :notnull => true, :min => 1, :max => 99
+    c.property 'prop2', :string, :mandatory => true
+    c.link     'users', :linkset, 'OUser' # by default: :mandatory => false, :notnull => false
   end
 
-
-  1.upto(10) { |i| client.command "INSERT INTO #{CLASS} (prop1, prop2) VALUES (#{i}, 'string#{i}')" }
-
+  admin = client.query("SELECT FROM OUser WHERE name = 'admin'")[0]
+  1.upto(5) do |i|
+    # insert link to admin only to first two
+    client.command "INSERT INTO #{CLASS} (prop1, prop2, users) VALUES (#{i}, 'text#{i}', [#{i<3 ? admin['@rid'] : ''}])"
+  end
 
   puts client.query "SELECT FROM #{CLASS}"
-  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"testing", "prop1"=>1, "prop2"=>"string1"}
-  > {"@type"=>"d", "@rid"=>"#6:1", "@version"=>0, "@class"=>"testing", "prop1"=>2, "prop2"=>"string2"}
-  > {"@type"=>"d", "@rid"=>"#6:2", "@version"=>0, "@class"=>"testing", "prop1"=>3, "prop2"=>"string3"}
-  > {"@type"=>"d", "@rid"=>"#6:3", "@version"=>0, "@class"=>"testing", "prop1"=>4, "prop2"=>"string4"}
-  > {"@type"=>"d", "@rid"=>"#6:4", "@version"=>0, "@class"=>"testing", "prop1"=>5, "prop2"=>"string5"}
-  > {"@type"=>"d", "@rid"=>"#6:5", "@version"=>0, "@class"=>"testing", "prop1"=>6, "prop2"=>"string6"}
-  > {"@type"=>"d", "@rid"=>"#6:6", "@version"=>0, "@class"=>"testing", "prop1"=>7, "prop2"=>"string7"}
-  > {"@type"=>"d", "@rid"=>"#6:7", "@version"=>0, "@class"=>"testing", "prop1"=>8, "prop2"=>"string8"}
-  > {"@type"=>"d", "@rid"=>"#6:8", "@version"=>0, "@class"=>"testing", "prop1"=>9, "prop2"=>"string9"}
-  > {"@type"=>"d", "@rid"=>"#6:9", "@version"=>0, "@class"=>"testing", "prop1"=>10, "prop2"=>"string10"}
+  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
+  > {"@type"=>"d", "@rid"=>"#6:1", "@version"=>0, "@class"=>"myclass", "prop1"=>2, "prop2"=>"text2", "users"=>["#4:0"]}
+  > {"@type"=>"d", "@rid"=>"#6:2", "@version"=>0, "@class"=>"myclass", "prop1"=>3, "prop2"=>"text3", "users"=>[]}
+  > {"@type"=>"d", "@rid"=>"#6:3", "@version"=>0, "@class"=>"myclass", "prop1"=>4, "prop2"=>"text4", "users"=>[]}
+  > {"@type"=>"d", "@rid"=>"#6:4", "@version"=>0, "@class"=>"myclass", "prop1"=>5, "prop2"=>"text5", "users"=>[]}
+
   puts client.query "SELECT count(*) FROM #{CLASS}"
-  > {"@type"=>"d", "@version"=>0, "count"=>10, "@fieldTypes"=>"count=l"}
+  > {"@type"=>"d", "@version"=>0, "count"=>5, "@fieldTypes"=>"count=l"}
+
   puts client.query "SELECT max(prop1) FROM #{CLASS}"
-  > {"@type"=>"d", "@version"=>0, "max"=>10}
-  puts client.query "SELECT FROM #{CLASS} WHERE prop2 LIKE '%10'"
-  > {"@type"=>"d", "@rid"=>"#6:9", "@version"=>0, "@class"=>"testing", "prop1"=>10, "prop2"=>"string10"}
+  > {"@type"=>"d", "@version"=>0, "max"=>5}
+
+  puts client.query "SELECT FROM (TRAVERSE any() FROM (SELECT FROM myclass WHERE prop1 = 1))"
+  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
+  > {"@type"=>"d", "@rid"=>"#4:0", "@version"=>0, "@class"=>"OUser", "name"=>"admin", "password"=>"{SHA-256}8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918", "status"=>"ACTIVE", "roles"=>["#3:0"]}
+  > {"@type"=>"d", "@rid"=>"#3:0", "@version"=>0, "@class"=>"ORole", "name"=>"admin", "mode"=>1, "rules"=>{}, "@fieldTypes"=>"mode=b"}
 
 
   client.drop_class CLASS
@@ -55,8 +57,9 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 * gem published on http://rubygems.org/gems/orientdb4r
 
 === Important Upgrade Notice
-2012-06-19 [v0.2.1]: Client#create_class - parameter given to a block has new method 'link' to define a linked property
-2012-06-17 [v0.2.0]: Client#get_class raises Orientdb4r::NotFoundError instead of ArgumentError
+
+* 2012-06-19 [v0.2.1]: Client#create_class - parameter given to a block has new method 'link' to define a linked property
+* 2012-06-17 [v0.2.0]: Client#get_class raises Orientdb4r::NotFoundError instead of ArgumentError
 
 
 

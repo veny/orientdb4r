@@ -31,7 +31,7 @@ class TestDmo < Test::Unit::TestCase
 
   ###
   # INSERT INTO
-  def xtest_insert
+  def test_insert
     assert_nothing_thrown do
       1.upto(10) do |i|
         @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, '#{random_string}', [#{@admin['@rid']}])"
