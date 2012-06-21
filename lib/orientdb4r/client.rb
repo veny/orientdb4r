@@ -3,6 +3,11 @@ module Orientdb4r
   class Client
     include Utils
 
+    DEFAULT_SERVER_VERSION = '1.0.0--'
+    SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
+
+    attr_reader :server_version
+
     ###
     # Constructor.
     def initialize

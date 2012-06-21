@@ -22,6 +22,7 @@ class TestDatabase < Test::Unit::TestCase
     assert_instance_of Hash, rslt
     assert rslt.size > 0
     assert rslt.include? 'classes'
+    assert_not_nil @client.server_version
 
     # connection refused
     client = Orientdb4r.client :port => 2840, :instance => :new
@@ -45,7 +46,7 @@ class TestDatabase < Test::Unit::TestCase
   def test_disconnect
     @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
     assert @client.connected?
-    @client.disconnect
+    assert_nothing_thrown do @client.disconnect; end
     assert !@client.connected?
     # unable to query after disconnect
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end

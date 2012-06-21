@@ -27,4 +27,25 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 'B', options[:b]
   end
 
+  def test_compare_versions
+    assert_raise ArgumentError do compare_versions 'foo', 'bar'; end
+    assert_raise ArgumentError do compare_versions nil, 'bar'; end
+    assert_raise ArgumentError do compare_versions 'foo', nil; end
+    assert_raise ArgumentError do compare_versions '1.0.0', 'bar'; end
+    assert_raise ArgumentError do compare_versions 'foo', '1.0.0'; end
+    assert_nothing_thrown do compare_versions '1.0.0', '1.1.0'; end
+
+    assert_equal 0, compare_versions('1.0.0', '1.0.0')
+    assert_equal 0, compare_versions('1.2.0', '1.2.0')
+    assert_equal 0, compare_versions('1.2.3', '1.2.3')
+
+    assert_equal 1, compare_versions('1.0.1', '1.0.0')
+    assert_equal 1, compare_versions('1.1.0', '1.0.0')
+    assert_equal 1, compare_versions('2.0.0', '1.0.0')
+
+    assert_equal -1, compare_versions('1.0.0', '1.0.1')
+    assert_equal -1, compare_versions('1.0.0', '1.1.0')
+    assert_equal -1, compare_versions('1.0.0', '2.0.0')
+  end
+
 end

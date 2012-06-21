@@ -2,6 +2,9 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
+    # https://groups.google.com/forum/?fromgroups#!topic/orient-database/jK4EZd068AE
+    # https://groups.google.com/forum/?fromgroups#!topic/orient-database/nJOAsgwSnKI
+    ['0.2.2', '2012-06-21', "Added support for server version detection [r5913]"],
     ['0.2.1', '2012-06-19', "Fixed linked property definition"],
     ['0.2.0', '2012-06-12', "Introduces document's CRUD operations"],
     ['0.1.2', '2012-06-10', 'Introduces new OClass module'],

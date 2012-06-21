@@ -46,6 +46,22 @@ module Orientdb4r
       (0...len).map{65.+(rand(25)).chr}.join
     end
 
+    ###
+    # Compares two given versions.
+    # ==== Returns
+    # * 1 if first > second
+    # * 0 if first == second
+    # * -1 if first < second
+    def compare_versions(first, second)
+      raise ArgumentError, "bad version format, version=#{first}" unless first =~ Orientdb4r::Client::SERVER_VERSION_PATTERN
+      raise ArgumentError, "bad version format, version=#{second}" unless second =~ Orientdb4r::Client::SERVER_VERSION_PATTERN
+
+      firstv = /^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/.match(first)[0]
+      secondv = /^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/.match(second)[0]
+
+      return 0 if firstv == secondv
+      return firstv > secondv ? 1 : -1
+    end
 
     class Proxy
 

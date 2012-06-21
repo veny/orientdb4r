@@ -34,6 +34,15 @@ module Orientdb4r
 
         decorate_classes_with_model(rslt['classes'])
 
+        # try to read server version
+        if rslt.include? 'server'
+          @server_version = rslt['server']['version']
+        else
+          @server_version = DEFAULT_SERVER_VERSION
+        end
+        raise OrientdbError, "bad version format, version=#{server_version}" unless server_version =~ SERVER_VERSION_PATTERN
+        Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}"
+
         @connected = true
       rescue
         @connected = false
@@ -80,16 +89,29 @@ module Orientdb4r
     def get_class(name) #:nodoc:
       raise ArgumentError, "class name is blank" if blank?(name)
 
-      # there seems to be a bug in REST API, only data are returned
-      #response = @resource["class/#{@database}/#{name}"].get
-      #rslt = process_response(response)
+#uuu      if compare_versions('1.1.0', server_version) >= 0
+#        begin
+#          response = @resource["class/#{@database}/#{name}"].get
+#        rescue
+#          raise NotFoundError
+#        end
+#        rslt = process_response(response, :mode => :strict)
+#        classes = [rslt['class']]
+#      else
+        # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
+        # workaround - use metadate delivered by 'connect'
+        response = @resource["connect/#{@database}"].get
+        connect_info = process_response(response, :mode => :strict)
 
-      # workaround - use metadate delivered by 'connect'
-      response = @resource["connect/#{@database}"].get
-      connect_info = process_response(response, :mode => :strict)
+        classes = connect_info['classes'].select { |i| i['name'] == name }
+        raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
 
-      classes = connect_info['classes'].select { |i| i['name'] == name }
-      raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
+#uuu        # in version 1.0.0 the 'properties' are Array, not Hash
+#        rslt = {}
+#        classes[0]['properties'].each { |p| rslt[p['name']] = p }
+#        classes[0]['properties'] = rslt
+#      end
+
       decorate_classes_with_model(classes)
       clazz = classes[0]
       clazz.extend Orientdb4r::HashExtension
