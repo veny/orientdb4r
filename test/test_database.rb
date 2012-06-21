@@ -43,6 +43,8 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # DISCONNECT
   def test_disconnect
+    @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    assert @client.connected?
     @client.disconnect
     assert !@client.connected?
     # unable to query after disconnect

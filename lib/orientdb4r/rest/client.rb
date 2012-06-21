@@ -3,7 +3,7 @@ module Orientdb4r
   class RestClient < Client
     include Aop2
 
-    before [:query, :command, :get_class], :assert_connected
+    before [:create_database, :get_class, :query, :command], :assert_connected
     around [:query, :command], :time_around
 
     attr_reader :host, :port, :ssl, :user, :password

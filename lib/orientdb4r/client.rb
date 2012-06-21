@@ -155,25 +155,6 @@ module Orientdb4r
     end
 
 
-    ###
-    # Creates links between two or more records of type Document.
-    # You need to create the class before.
-#    def create_link(clazz, options={})
-#      raise ArgumentError, "class name is blank" if blank?(clazz)
-#      opt_pattern = {
-#        :name => :optional, :type => :optional,
-#        :source_property => :mandatory, :destination_class => :mandatory, :destination_property => :mandatory
-#      }
-#      verify_options(options, opt_pattern)
-#
-#      cmd = 'CREATE LINK '
-#      cmd << "#{options[:name]} " if options.include? :name
-#      cmd << "TYPE #{options[:type]} " if options.include? :type
-#      cmd << "FROM #{clazz}.#{options[:source_property]} TO #{options[:destination_class]}.#{options[:destination_property]}"
-#puts cmd
-#      command cmd
-#    end
-
     # ----------------------------------------------------------------- DOCUMENT
 
     ###

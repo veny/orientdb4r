@@ -15,7 +15,7 @@
   admin = client.query("SELECT FROM OUser WHERE name = 'admin'")[0]
   1.upto(5) do |i|
     # insert link to admin only to first two
-    client.command "INSERT INTO #{CLASS} (prop1, prop2, users) VALUES (#{i}, 'text#{i}', [#{i<3 ? admin['@rid'] : ''}])"
+    client.command "INSERT INTO #{CLASS} (prop1, prop2, users) VALUES (#{i}, 'text#{i}', [#{admin['@rid'] if i<3}])"
   end
 
   puts client.query "SELECT FROM #{CLASS}"
@@ -27,7 +27,7 @@
   puts client.query "SELECT max(prop1) FROM #{CLASS}"
   #>
 
-  puts client.query "SELECT FROM (TRAVERSE any() FROM (SELECT FROM myclass WHERE prop1 = 1))"
+  puts client.query "TRAVERSE any() FROM (SELECT FROM #{CLASS} WHERE prop1 = 1)"
   #>
 
 

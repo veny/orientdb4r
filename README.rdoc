@@ -24,7 +24,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   admin = client.query("SELECT FROM OUser WHERE name = 'admin'")[0]
   1.upto(5) do |i|
     # insert link to admin only to first two
-    client.command "INSERT INTO #{CLASS} (prop1, prop2, users) VALUES (#{i}, 'text#{i}', [#{i<3 ? admin['@rid'] : ''}])"
+    client.command "INSERT INTO #{CLASS} (prop1, prop2, users) VALUES (#{i}, 'text#{i}', [#{admin['@rid'] if i<3}])"
   end
 
   puts client.query "SELECT FROM #{CLASS}"
@@ -40,7 +40,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   puts client.query "SELECT max(prop1) FROM #{CLASS}"
   > {"@type"=>"d", "@version"=>0, "max"=>5}
 
-  puts client.query "SELECT FROM (TRAVERSE any() FROM (SELECT FROM myclass WHERE prop1 = 1))"
+  puts client.query "TRAVERSE any() FROM (SELECT FROM #{CLASS} WHERE prop1 = 1)"
   > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
   > {"@type"=>"d", "@rid"=>"#4:0", "@version"=>0, "@class"=>"OUser", "name"=>"admin", "password"=>"{SHA-256}8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918", "status"=>"ACTIVE", "roles"=>["#3:0"]}
   > {"@type"=>"d", "@rid"=>"#3:0", "@version"=>0, "@class"=>"ORole", "name"=>"admin", "mode"=>1, "rules"=>{}, "@fieldTypes"=>"mode=b"}
