@@ -89,15 +89,15 @@ module Orientdb4r
     def get_class(name) #:nodoc:
       raise ArgumentError, "class name is blank" if blank?(name)
 
-#uuu      if compare_versions('1.1.0', server_version) >= 0
-#        begin
-#          response = @resource["class/#{@database}/#{name}"].get
-#        rescue
-#          raise NotFoundError
-#        end
-#        rslt = process_response(response, :mode => :strict)
-#        classes = [rslt['class']]
-#      else
+      if compare_versions(server_version, '1.1.0') >= 0
+        begin
+          response = @resource["class/#{@database}/#{name}"].get
+        rescue
+          raise NotFoundError
+        end
+        rslt = process_response(response, :mode => :strict)
+        classes = [rslt]
+      else
         # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
         # workaround - use metadate delivered by 'connect'
         response = @resource["connect/#{@database}"].get
@@ -105,12 +105,7 @@ module Orientdb4r
 
         classes = connect_info['classes'].select { |i| i['name'] == name }
         raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
-
-#uuu        # in version 1.0.0 the 'properties' are Array, not Hash
-#        rslt = {}
-#        classes[0]['properties'].each { |p| rslt[p['name']] = p }
-#        classes[0]['properties'] = rslt
-#      end
+      end
 
       decorate_classes_with_model(classes)
       clazz = classes[0]
@@ -122,7 +117,6 @@ module Orientdb4r
           prop.extend Orientdb4r::Property
         end
       end
-
 
       clazz
     end
@@ -274,6 +268,7 @@ module Orientdb4r
 
       def decorate_classes_with_model(classes)
         classes.each do |clazz|
+#puts "OOO #{classes}"
           clazz.extend Orientdb4r::HashExtension
           clazz.extend Orientdb4r::OClass
             unless clazz['properties'].nil? # there can be a class without properties
