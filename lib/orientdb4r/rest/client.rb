@@ -126,8 +126,11 @@ module Orientdb4r
       raise ArgumentError, 'query is blank' if blank? sql
 
       response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}"].get
-      rslt = process_response(response)
-      rslt['result']
+      entries = process_response(response)
+      rslt = entries['result']
+      # mixin all document entries (they have '@class' attribute)
+      rslt.each { |doc| doc.extend Orientdb4r::DocumentMetadata unless doc['@class'].nil? }
+      rslt
     end
 
 

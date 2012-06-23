@@ -79,6 +79,7 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_equal 1, doc['prop1']
     assert_equal 'text', doc['prop2']
     assert_nil doc['unknown_property']
+    assert doc.kind_of? Orientdb4r::DocumentMetadata
 
     # not existing RID
     rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'

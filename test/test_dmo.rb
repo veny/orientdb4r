@@ -60,7 +60,11 @@ class TestDmo < Test::Unit::TestCase
       @client.command "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (#{i}, 'string#{i}', [#{@admin['@rid']}])"
     end
 
-    assert_equal 10, @client.query("SELECT FROM #{CLASS}").size
+    entries = @client.query("SELECT FROM #{CLASS}")
+    assert_instance_of Array, entries
+    assert_equal 10, entries.size
+    entries.each { |doc| assert doc.kind_of? Orientdb4r::DocumentMetadata }
+
     assert_equal 1, @client.query("SELECT FROM #{CLASS} WHERE prop1 = 1").size
     assert_equal 0, @client.query("SELECT FROM #{CLASS} WHERE prop1 = 11").size
     # graph

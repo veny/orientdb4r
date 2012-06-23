@@ -2,6 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
+    ['0.2.3', '2012-06-24', "Documents received by a query are kind of Orientdb4r::DocumentMetadata"],
     # https://groups.google.com/forum/?fromgroups#!topic/orient-database/jK4EZd068AE
     # https://groups.google.com/forum/?fromgroups#!topic/orient-database/nJOAsgwSnKI
     ['0.2.2', '2012-06-23', "Added support for server version detection [r5913]"],

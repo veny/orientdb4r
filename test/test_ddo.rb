@@ -44,6 +44,7 @@ class TestDdo < Test::Unit::TestCase
     assert_instance_of Array, clazz.clusters
     assert !clazz.clusters.empty?
     assert_not_nil clazz.default_cluster
+    assert clazz.kind_of? Orientdb4r::OClass
     # test Property
     prop = clazz.property :password
     assert_equal 'password', prop.name
@@ -52,6 +53,7 @@ class TestDdo < Test::Unit::TestCase
     assert prop.not_null
     assert_nil prop.min
     assert_nil prop.min
+    assert prop.kind_of? Orientdb4r::Property
   end
 
 
