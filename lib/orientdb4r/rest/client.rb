@@ -57,15 +57,15 @@ module Orientdb4r
 
       begin
         response = @resource['disconnect'].get
-      # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
-      # Disconnect doesn't require you're authenticated.
-      # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
       rescue ::RestClient::Unauthorized
-        Orientdb4r::logger.debug 'disconnected from server'
+        # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
+        # Disconnect doesn't require you're authenticated.
+        # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
       ensure
         @connected = false
         @user = nil
         @password = nil
+        Orientdb4r::logger.debug 'disconnected from server'
       end
     end
 
