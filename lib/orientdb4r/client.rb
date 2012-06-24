@@ -3,7 +3,9 @@ module Orientdb4r
   class Client
     include Utils
 
+    # Server version used if no concrete version identified.
     DEFAULT_SERVER_VERSION = '1.0.0--'
+
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
 
     attr_reader :server_version

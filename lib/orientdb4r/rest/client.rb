@@ -3,10 +3,13 @@ module Orientdb4r
   class RestClient < Client
     include Aop2
 
+    # Name of cookie that represents a session.
+    SESSION_COOKIE_NAME = 'OSESSIONID'
+
     before [:create_database, :get_class, :query, :command], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :host, :port, :ssl, :user, :password
+    attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
 
 
     def initialize(options) #:nodoc:
@@ -26,11 +29,16 @@ module Orientdb4r
       @user = options[:user]
       @password = options[:password]
 
-      @resource = ::RestClient::Resource.new(url, :user => user, :password => password)
 
       begin
-        response = @resource["connect/#{@database}"].get
+        response = ::RestClient::Request.new(:method => :get, :url => "#{url}/connect/#{@database}", \
+            :user => user, :password => password).execute
+        @session_id = response.cookies[SESSION_COOKIE_NAME]
         rslt = process_response(response, :mode => :strict)
+
+        # resource used for all request
+        @resource = ::RestClient::Resource.new(url, \
+            :user => user, :password => password, :cookies => { SESSION_COOKIE_NAME => session_id})
 
         decorate_classes_with_model(rslt['classes'])
 
@@ -41,11 +49,18 @@ module Orientdb4r
           @server_version = DEFAULT_SERVER_VERSION
         end
         raise OrientdbError, "bad version format, version=#{server_version}" unless server_version =~ SERVER_VERSION_PATTERN
-        Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}"
+        Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}, session=#{session_id}"
 
         @connected = true
+        @session_id = response.cookies[SESSION_COOKIE_NAME]
       rescue
         @connected = false
+        @session_id = nil
+        @server_version = nil
+        @user = nil
+        @password = nil
+        @database = nil
+        @resource = nil
         raise ConnectionError
       end
       rslt
@@ -63,8 +78,12 @@ module Orientdb4r
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
       ensure
         @connected = false
+        @server_version = nil
+        @session_id = nil
         @user = nil
         @password = nil
+        @database = nil
+        @resource = nil
         Orientdb4r::logger.debug 'disconnected from server'
       end
     end
@@ -152,9 +171,10 @@ module Orientdb4r
 
 
     def server(options={}) #:nodoc:
+      # 'server' does NOT use the RestClient Resource to construct the HTTP request
+
       options_pattern = { :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
-
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
@@ -274,7 +294,6 @@ module Orientdb4r
 
       def decorate_classes_with_model(classes)
         classes.each do |clazz|
-#puts "OOO #{classes}"
           clazz.extend Orientdb4r::HashExtension
           clazz.extend Orientdb4r::OClass
             unless clazz['properties'].nil? # there can be a class without properties

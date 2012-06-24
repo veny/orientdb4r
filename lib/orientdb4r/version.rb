@@ -2,9 +2,11 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
+    # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
+    ['0.2.4', '2012-06-25', "Added session management"],
     ['0.2.3', '2012-06-24', "Documents received by a query are kind of Orientdb4r::DocumentMetadata"],
-    # https://groups.google.com/forum/?fromgroups#!topic/orient-database/jK4EZd068AE
-    # https://groups.google.com/forum/?fromgroups#!topic/orient-database/nJOAsgwSnKI
+    # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/jK4EZd068AE
+    # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/nJOAsgwSnKI
     ['0.2.2', '2012-06-23', "Added support for server version detection [r5913]"],
     ['0.2.1', '2012-06-19', "Fixed linked property definition"],
     ['0.2.0', '2012-06-12', "Introduces document's CRUD operations"],
