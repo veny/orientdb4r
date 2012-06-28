@@ -3,7 +3,7 @@ module Orientdb4r
   # Version history.
   VERSION_HISTORY = [
     # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
-    ['0.2.4', '2012-06-25', "Added session management"],
+    ['0.2.4', '2012-06-26', "Added session management"],
     ['0.2.3', '2012-06-24', "Documents received by a query are kind of Orientdb4r::DocumentMetadata"],
     # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/jK4EZd068AE
     # v-- https://groups.google.com/forum/?fromgroups#!topic/orient-database/nJOAsgwSnKI
