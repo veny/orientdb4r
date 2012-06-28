@@ -74,10 +74,12 @@ Tested on
 * OrientDB 1.0.0
 
 == TESTS
+In order to run the tests you only need to:
 
-   rake test
+  cd /path/to/repository
+  rake test
 
-Start an instance of OrientDB (on localhost with default port and 'admin/admin' account) before running.
+Start an instance of OrientDB (on localhost with default web port 2480 and 'admin/admin' account) before running.
 
 == AUTHOR
 
