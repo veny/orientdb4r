@@ -16,6 +16,7 @@ module Orientdb4r
       @connected = false
     end
 
+
     # --------------------------------------------------------------- CONNECTION
 
     ###
@@ -47,6 +48,7 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
     # ----------------------------------------------------------------- DATABASE
 
     ###
@@ -59,10 +61,11 @@ module Orientdb4r
 
 
     ###
-    # Gets informations about requested class.
-    def get_class(name)
+    # Retrieves all the information about a database.
+    def get_database(name)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
+
 
     # ---------------------------------------------------------------------- SQL
 
@@ -78,6 +81,7 @@ module Orientdb4r
     def command(sql)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
+
 
     # -------------------------------------------------------------------- CLASS
 
@@ -108,6 +112,13 @@ module Orientdb4r
         end
         yield proxy
       end
+    end
+
+
+    ###
+    # Gets informations about requested class.
+    def get_class(name)
+      raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
 

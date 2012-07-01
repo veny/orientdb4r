@@ -107,5 +107,8 @@ if ARGV.include?('--data')
 
 end
 
-# FIND REFERENCES #6:5 [OrgUnit] # get parent
-#
+# FIND REFERENCES #6:5 [OrgUnit]  # get parent
+
+# TRAVERSE descendants FROM #6:10 WHERE $depth < 2  # get first level of descendants
+# SELECT FROM (TRAVERSE descendants FROM #6:10 WHERE $depth < 2) WHERE $depth > 0  # eliminate root of query
+# SELECT FROM orgunit WHERE any() traverse(0,10) (name = 'Recruitment')  # get ancestors

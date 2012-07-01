@@ -6,7 +6,7 @@ module Orientdb4r
     # Name of cookie that represents a session.
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
-    before [:create_database, :get_class, :query, :command], :assert_connected
+    before [:create_database, :get_database, :get_class, :query, :command], :assert_connected
     around [:query, :command], :time_around
 
     attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
@@ -21,6 +21,8 @@ module Orientdb4r
       @ssl = options[:ssl]
     end
 
+
+    # --------------------------------------------------------------- CONNECTION
 
     def connect(options) #:nodoc:
       options_pattern = { :database => :mandatory, :user => :mandatory, :password => :mandatory }
@@ -89,6 +91,26 @@ module Orientdb4r
     end
 
 
+    def server(options={}) #:nodoc:
+      # 'server' does NOT use the RestClient Resource to construct the HTTP request
+
+      options_pattern = { :user => :optional, :password => :optional }
+      verify_options(options, options_pattern)
+
+      u = options.include?(:user) ? options[:user] : user
+      p = options.include?(:password) ? options[:password] : password
+      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
+      begin
+        response = resource['server'].get
+      rescue
+        raise OrientdbError
+      end
+      process_response(response)
+    end
+
+
+    # ----------------------------------------------------------------- DATABASE
+
     def create_database(options) #:nodoc:
       options_pattern = {
         :database => :mandatory, :type => 'memory',
@@ -107,6 +129,46 @@ module Orientdb4r
       process_response(response)
     end
 
+
+    def get_database(name) #:nodoc:
+      begin
+        response = @resource["database/#{name}"].get
+      rescue
+        raise NotFoundError
+      end
+      process_response(response)
+    end
+
+
+    # ---------------------------------------------------------------------- SQL
+
+    def query(sql) #:nodoc:
+      raise ArgumentError, 'query is blank' if blank? sql
+
+      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}"].get
+      entries = process_response(response)
+      rslt = entries['result']
+      # mixin all document entries (they have '@class' attribute)
+      rslt.each { |doc| doc.extend Orientdb4r::DocumentMetadata unless doc['@class'].nil? }
+      rslt
+    end
+
+
+    def command(sql) #:nodoc:
+      raise ArgumentError, 'command is blank' if blank? sql
+      begin
+#puts "REQ command/#{@database}/sql/#{CGI::escape(sql)}"
+        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
+        rslt = process_response(response)
+        rslt
+#puts "RESP #{response.body}"
+      rescue
+        raise OrientdbError
+      end
+    end
+
+
+    # -------------------------------------------------------------------- CLASS
 
     def get_class(name) #:nodoc:
       raise ArgumentError, "class name is blank" if blank?(name)
@@ -141,50 +203,6 @@ module Orientdb4r
       end
 
       clazz
-    end
-
-
-    def query(sql) #:nodoc:
-      raise ArgumentError, 'query is blank' if blank? sql
-
-      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}"].get
-      entries = process_response(response)
-      rslt = entries['result']
-      # mixin all document entries (they have '@class' attribute)
-      rslt.each { |doc| doc.extend Orientdb4r::DocumentMetadata unless doc['@class'].nil? }
-      rslt
-    end
-
-
-    def command(sql) #:nodoc:
-      raise ArgumentError, 'command is blank' if blank? sql
-      begin
-#puts "REQ command/#{@database}/sql/#{CGI::escape(sql)}"
-        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
-        rslt = process_response(response)
-        rslt
-#puts "RESP #{response.body}"
-      rescue
-        raise OrientdbError
-      end
-    end
-
-
-    def server(options={}) #:nodoc:
-      # 'server' does NOT use the RestClient Resource to construct the HTTP request
-
-      options_pattern = { :user => :optional, :password => :optional }
-      verify_options(options, options_pattern)
-
-      u = options.include?(:user) ? options[:user] : user
-      p = options.include?(:password) ? options[:password] : password
-      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
-      begin
-        response = resource['server'].get
-      rescue
-        raise OrientdbError
-      end
-      process_response(response)
     end
 
 
