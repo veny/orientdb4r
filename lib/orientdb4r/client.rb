@@ -67,6 +67,19 @@ module Orientdb4r
     end
 
 
+    ###
+    # Checks existence of a given database.
+    def database_exists?(name)
+      rslt = true
+      begin
+        get_database name
+      rescue NotFoundError
+        rslt = false
+      end
+      rslt
+    end
+
+
     # ---------------------------------------------------------------------- SQL
 
     ###

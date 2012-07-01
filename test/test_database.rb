@@ -102,10 +102,13 @@ class TestDatabase < Test::Unit::TestCase
     assert_not_nil rslt
     assert_instance_of Hash, rslt
     assert rslt.include? 'classes'
+    assert @client.database_exists?('temp')
 
     # bad databases
     assert_raise Orientdb4r::NotFoundError do @client.get_database 'UnknownDB'; end
     assert_raise Orientdb4r::NotFoundError do @client.get_database 'temp/admin'; end
+    assert !@client.database_exists?('UnknownDB')
+    assert !@client.database_exists?('temp/admin')
   end
 
 
