@@ -86,7 +86,7 @@ module Orientdb4r
 
     ###
     # Executes a query against the database.
-    def query(sql)
+    def query(sql, options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 

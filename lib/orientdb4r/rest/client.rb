@@ -155,10 +155,15 @@ module Orientdb4r
 
     # ---------------------------------------------------------------------- SQL
 
-    def query(sql) #:nodoc:
+    def query(sql, options=nil) #:nodoc:
       raise ArgumentError, 'query is blank' if blank? sql
 
-      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}"].get
+      options_pattern = { :limit => :optional }
+      verify_options(options, options_pattern) unless options.nil?
+
+      limit = ''
+      limit = "/#{options[:limit]}" if !options.nil? and options.include?(:limit)
+      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}#{limit}"].get
       entries = process_response(response)
       rslt = entries['result']
       # mixin all document entries (they have '@class' attribute)
