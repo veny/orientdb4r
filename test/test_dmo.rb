@@ -67,6 +67,7 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 20, entries.size # 20 is default limit
     entries.each { |doc| assert doc.kind_of? Orientdb4r::DocumentMetadata }
     # limit
+    assert_equal 5, @client.query("SELECT FROM #{CLASS} LIMIT 5").size
     entries = @client.query "SELECT FROM #{CLASS}", :limit => 100
     assert_equal 25, entries.size
     assert_raise ArgumentError do @client.query "SELECT FROM #{CLASS}", :unknown => 100; end
