@@ -13,6 +13,9 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
   client = Orientdb4r.client  # equivalent for :host => 'localhost', :port => 2480, :ssl => false
 
+  client.database_exists? :database => 'temp', :user => 'admin', :password => 'admin'
+  => true
+
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
 
   client.create_class(CLASS) do |c|
@@ -28,22 +31,22 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   end
 
   puts client.query "SELECT FROM #{CLASS}"
-  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
-  > {"@type"=>"d", "@rid"=>"#6:1", "@version"=>0, "@class"=>"myclass", "prop1"=>2, "prop2"=>"text2", "users"=>["#4:0"]}
-  > {"@type"=>"d", "@rid"=>"#6:2", "@version"=>0, "@class"=>"myclass", "prop1"=>3, "prop2"=>"text3", "users"=>[]}
-  > {"@type"=>"d", "@rid"=>"#6:3", "@version"=>0, "@class"=>"myclass", "prop1"=>4, "prop2"=>"text4", "users"=>[]}
-  > {"@type"=>"d", "@rid"=>"#6:4", "@version"=>0, "@class"=>"myclass", "prop1"=>5, "prop2"=>"text5", "users"=>[]}
+  => {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
+  => {"@type"=>"d", "@rid"=>"#6:1", "@version"=>0, "@class"=>"myclass", "prop1"=>2, "prop2"=>"text2", "users"=>["#4:0"]}
+  => {"@type"=>"d", "@rid"=>"#6:2", "@version"=>0, "@class"=>"myclass", "prop1"=>3, "prop2"=>"text3", "users"=>[]}
+  => {"@type"=>"d", "@rid"=>"#6:3", "@version"=>0, "@class"=>"myclass", "prop1"=>4, "prop2"=>"text4", "users"=>[]}
+  => {"@type"=>"d", "@rid"=>"#6:4", "@version"=>0, "@class"=>"myclass", "prop1"=>5, "prop2"=>"text5", "users"=>[]}
 
   puts client.query "SELECT count(*) FROM #{CLASS}"
-  > {"@type"=>"d", "@version"=>0, "count"=>5, "@fieldTypes"=>"count=l"}
+  => {"@type"=>"d", "@version"=>0, "count"=>5, "@fieldTypes"=>"count=l"}
 
   puts client.query "SELECT max(prop1) FROM #{CLASS}"
-  > {"@type"=>"d", "@version"=>0, "max"=>5}
+  => {"@type"=>"d", "@version"=>0, "max"=>5}
 
   puts client.query "TRAVERSE any() FROM (SELECT FROM #{CLASS} WHERE prop1 = 1)"
-  > {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
-  > {"@type"=>"d", "@rid"=>"#4:0", "@version"=>0, "@class"=>"OUser", "name"=>"admin", "password"=>"{SHA-256}8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918", "status"=>"ACTIVE", "roles"=>["#3:0"]}
-  > {"@type"=>"d", "@rid"=>"#3:0", "@version"=>0, "@class"=>"ORole", "name"=>"admin", "mode"=>1, "rules"=>{}, "@fieldTypes"=>"mode=b"}
+  => {"@type"=>"d", "@rid"=>"#6:0", "@version"=>0, "@class"=>"myclass", "prop1"=>1, "prop2"=>"text1", "users"=>["#4:0"]}
+  => {"@type"=>"d", "@rid"=>"#4:0", "@version"=>0, "@class"=>"OUser", "name"=>"admin", "password"=>"{SHA-256}8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918", "status"=>"ACTIVE", "roles"=>["#3:0"]}
+  => {"@type"=>"d", "@rid"=>"#3:0", "@version"=>0, "@class"=>"ORole", "name"=>"admin", "mode"=>1, "rules"=>{}, "@fieldTypes"=>"mode=b"}
 
 
   client.drop_class CLASS
