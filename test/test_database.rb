@@ -97,22 +97,23 @@ class TestDatabase < Test::Unit::TestCase
   def test_get_database
     # not connected
     assert_nothing_thrown do @client.get_database :database => 'temp', :user => 'admin', :password => 'admin' ; end
-    assert_raise Orientdb4r::NotFoundError do @client.get_database 'temp'; end
+    assert_raise Orientdb4r::ConnectionError do @client.get_database; end
     # connected
     @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-    assert_nothing_thrown do @client.get_database 'temp' ; end
+    assert_nothing_thrown do @client.get_database; end # gets info about connected DB
 
-    rslt = @client.get_database 'temp'
+    rslt = @client.get_database
     assert_not_nil rslt
     assert_instance_of Hash, rslt
     assert rslt.include? 'classes'
-    assert @client.database_exists?('temp')
+    assert @client.database_exists?(:database => 'temp', :user => 'admin', :password => 'admin')
+    assert @client.database_exists?(:database => 'temp') # use credentials of logged in user
 
     # bad databases
-    assert_raise Orientdb4r::NotFoundError do @client.get_database 'UnknownDB'; end
-    assert_raise Orientdb4r::NotFoundError do @client.get_database 'temp/admin'; end
-    assert !@client.database_exists?('UnknownDB')
-    assert !@client.database_exists?('temp/admin')
+    assert_raise Orientdb4r::NotFoundError do @client.get_database :database => 'UnknownDB'; end
+    assert_raise Orientdb4r::NotFoundError do @client.get_database :database => 'temp/admin'; end
+    assert !@client.database_exists?(:database => 'UnknownDB')
+    assert !@client.database_exists?(:database => 'temp/admin')
   end
 
 

@@ -132,12 +132,15 @@ module Orientdb4r
     end
 
 
-    def get_database(name_or_options) #:nodoc:
-      if name_or_options.is_a? String
-        options = { :database => name_or_options }
-      else
-        options = name_or_options
+    def get_database(options=nil) #:nodoc:
+      raise ArgumentError, 'options have to be a Hash' if !options.nil? and !options.kind_of? Hash
+
+      if options.nil?
+        # use values from connect
+        raise ConnectionError, 'client has to be connected if no params' unless connected?
+        options = { :database => database, :user => user, :password => password }
       end
+
       options_pattern = { :database => :mandatory, :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
