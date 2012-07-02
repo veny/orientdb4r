@@ -78,30 +78,6 @@ module Orientdb4r
 
     end # Proxy
 
-
-    class DataGenerator
-
-      def initialize
-        @words = IO.readlines('/usr/share/dict/words')
-        0.upto(@words.size - 1) do |i|
-          word = @words[i]
-          word.strip!
-          idx = word.index("'")
-          word = word[0..(idx - 1)] unless idx.nil?
-          @words[i] = word
-        end
-        @words.uniq
-        Orientdb4r::logger.info "DataGenerator: #{@words.size} words"
-      end
-
-      ###
-      # Gets a random word.
-      def word
-        @words[rand(@words.size)]
-      end
-
-    end # DataGenerator
-
   end # Utils
 
 
