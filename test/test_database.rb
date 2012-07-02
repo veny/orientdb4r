@@ -95,8 +95,12 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # GET DATABASE
   def test_get_database
+    # not connected
+    assert_nothing_thrown do @client.get_database :database => 'temp', :user => 'admin', :password => 'admin' ; end
+    assert_raise Orientdb4r::NotFoundError do @client.get_database 'temp'; end
+    # connected
     @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-    assert_nothing_thrown do @client.get_database 'temp'; end
+    assert_nothing_thrown do @client.get_database 'temp' ; end
 
     rslt = @client.get_database 'temp'
     assert_not_nil rslt

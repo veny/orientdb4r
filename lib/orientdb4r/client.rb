@@ -62,17 +62,19 @@ module Orientdb4r
 
     ###
     # Retrieves all the information about a database.
-    def get_database(name)
+    # Client has not to be connected to see databases suitable to connect.
+    def get_database(name_or_options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
 
     ###
     # Checks existence of a given database.
-    def database_exists?(name)
+    # Client has not to be connected to see databases suitable to connect.
+    def database_exists?(name_or_options)
       rslt = true
       begin
-        get_database name
+        get_database name_or_options
       rescue NotFoundError
         rslt = false
       end

@@ -70,11 +70,9 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 == REQUIREMENTS
 
 Tested on
-* Ruby
- * 1.9.3
-* OrientDB
- * 1.0.0
- * 1.1.0-SNAPSHOT r5913 +
+* Ruby 1.9.3
+* OrientDB 1.0.0
+* OrientDB 1.1.0-SNAPSHOT r5913+
 
 == TESTS
 In order to run the tests you only need to:

@@ -6,7 +6,9 @@ module Orientdb4r
     # Name of cookie that represents a session.
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
-    before [:create_database, :get_database, :get_class, :query, :command], :assert_connected
+    before [:query, :command], :assert_connected
+    before [:create_class, :get_class, :drop_class, :create_property], :assert_connected
+    before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
     attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
@@ -130,9 +132,20 @@ module Orientdb4r
     end
 
 
-    def get_database(name) #:nodoc:
+    def get_database(name_or_options) #:nodoc:
+      if name_or_options.is_a? String
+        options = { :database => name_or_options }
+      else
+        options = name_or_options
+      end
+      options_pattern = { :database => :mandatory, :user => :optional, :password => :optional }
+      verify_options(options, options_pattern)
+
+      u = options.include?(:user) ? options[:user] : user
+      p = options.include?(:password) ? options[:password] : password
+      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
-        response = @resource["database/#{name}"].get
+        response = resource["database/#{options[:database]}"].get
       rescue
         raise NotFoundError
       end
