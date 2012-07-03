@@ -18,10 +18,12 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
 
-  client.create_class(CLASS) do |c|
-    c.property 'prop1', :integer, :notnull => true, :min => 1, :max => 99
-    c.property 'prop2', :string, :mandatory => true
-    c.link     'users', :linkset, 'OUser' # by default: :mandatory => false, :notnull => false
+  unless client.class_exists? CLASS
+    client.create_class(CLASS) do |c|
+      c.property 'prop1', :integer, :notnull => true, :min => 1, :max => 99
+      c.property 'prop2', :string, :mandatory => true
+      c.link     'users', :linkset, 'OUser' # by default: :mandatory => false, :notnull => false
+    end
   end
 
   admin = client.query("SELECT FROM OUser WHERE name = 'admin'")[0]

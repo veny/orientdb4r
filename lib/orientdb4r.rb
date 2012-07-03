@@ -21,14 +21,16 @@ module Orientdb4r
     ###
     # Gets a new database client or an existing for the current thread.
     # === options
-    #  * :force => true
+    #  * :instance => :new
     def client options={}
       if :new == options[:instance]
         options.delete :instance
         return RestClient.new options
       end
 
-      Thread.current[:orientdb_client] ||= RestClient.new options
+      Thread.exclusive {
+        Thread.current[:orientdb_client] ||= RestClient.new options
+      }
     end
 
     ###

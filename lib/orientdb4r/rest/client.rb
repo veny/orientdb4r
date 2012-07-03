@@ -281,7 +281,6 @@ module Orientdb4r
 
       begin
         response = @resource["document/#{@database}/#{rid}"].delete
-        puts "DELETE '#{response}'"
       rescue
         raise DataError
       end

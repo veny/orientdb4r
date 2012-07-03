@@ -138,6 +138,19 @@ module Orientdb4r
 
 
     ###
+    # Checks existence of a given class.
+    def class_exists?(name)
+      rslt = true
+      begin
+        get_class name
+      rescue NotFoundError
+        rslt = false
+      end
+      rslt
+    end
+
+
+    ###
     # Removes a class from the schema.
     def drop_class(name, options={})
       raise ArgumentError, "class name is blank" if blank?(name)
