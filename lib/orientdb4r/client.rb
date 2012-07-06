@@ -6,6 +6,7 @@ module Orientdb4r
     # Server version used if no concrete version identified.
     DEFAULT_SERVER_VERSION = '1.0.0--'
 
+    # # Regexp to validate format of providet version.
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
 
     attr_reader :server_version
@@ -13,6 +14,7 @@ module Orientdb4r
     ###
     # Constructor.
     def initialize
+      @nodes = []
       @connected = false
     end
 
@@ -233,6 +235,11 @@ module Orientdb4r
 
 
     protected
+
+      def a_node
+        @nodes[0]
+      end
+
 
       ###
       # Asserts if the client is connected and raises an error if not.

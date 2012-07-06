@@ -3,24 +3,25 @@ module Orientdb4r
   class RestClient < Client
     include Aop2
 
-    # Name of cookie that represents a session.
-    SESSION_COOKIE_NAME = 'OSESSIONID'
 
     before [:query, :command], :assert_connected
     before [:create_class, :get_class, :drop_class, :create_property], :assert_connected
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
+#NOD    attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
+    attr_reader :user, :password, :database
 
 
     def initialize(options) #:nodoc:
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
       verify_and_sanitize_options(options, options_pattern)
-      @host = options[:host]
-      @port = options[:port]
-      @ssl = options[:ssl]
+#NOD      @host = options[:host]
+#NOD      @port = options[:port]
+#NOD      @ssl = options[:ssl]
+
+      @nodes << RestClientNode.new(options[:host], options[:port], options[:ssl])
     end
 
 
@@ -33,40 +34,50 @@ module Orientdb4r
       @user = options[:user]
       @password = options[:password]
 
-
+      node = a_node
       begin
-        response = ::RestClient::Request.new(:method => :get, :url => "#{url}/connect/#{@database}", \
-            :user => user, :password => password).execute
-        @session_id = response.cookies[SESSION_COOKIE_NAME]
-        rslt = process_response(response, :mode => :strict)
-
-        # resource used for all request
-        @resource = ::RestClient::Resource.new(url, \
-            :user => user, :password => password, :cookies => { SESSION_COOKIE_NAME => session_id})
-
-        decorate_classes_with_model(rslt['classes'])
-
-        # try to read server version
-        if rslt.include? 'server'
-          @server_version = rslt['server']['version']
-        else
-          @server_version = DEFAULT_SERVER_VERSION
-        end
-        raise OrientdbError, "bad version format, version=#{server_version}" unless server_version =~ SERVER_VERSION_PATTERN
-        Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}, session=#{session_id}"
-
-        @connected = true
-        @session_id = response.cookies[SESSION_COOKIE_NAME]
+        response = node.oo_request(:method => :get, :uri => "connect/#{@database}", :user => user, :password => password)
       rescue
         @connected = false
-        @session_id = nil
         @server_version = nil
         @user = nil
         @password = nil
         @database = nil
-        @resource = nil
         raise ConnectionError
       end
+      rslt = process_response response
+      node.post_connect(user, password, response)
+      decorate_classes_with_model(rslt['classes'])
+
+#NOD        response = ::RestClient::Request.new(:method => :get, :url => "#{url}/connect/#{@database}", \
+#            :user => user, :password => password).execute
+#        @session_id = response.cookies[SESSION_COOKIE_NAME]
+
+        # resource used for all request
+        @resource = ::RestClient::Resource.new(node.url, \
+            :user => user, :password => password, :cookies => { RestNode::SESSION_COOKIE_NAME => node.session_id})
+
+      # try to read server version
+      if rslt.include? 'server'
+        @server_version = rslt['server']['version']
+      else
+        @server_version = DEFAULT_SERVER_VERSION
+      end
+      unless server_version =~ SERVER_VERSION_PATTERN
+        Orientdb4r::logger.warn "bad version format, version=#{server_version}"
+        @server_version = DEFAULT_SERVER_VERSION
+      end
+
+      Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}, session=#{node.session_id}"
+      @connected = true
+#NOD      rescue
+#        @connected = false
+#        @server_version = nil
+#        @user = nil
+#        @password = nil
+#        @database = nil
+#        raise ConnectionError
+#      end
       rslt
     end
 
@@ -74,22 +85,22 @@ module Orientdb4r
     def disconnect #:nodoc:
       return unless @connected
 
-      begin
-        response = @resource['disconnect'].get
-      rescue ::RestClient::Unauthorized
+      node = a_node
+      node.request(:method => :get, :uri => 'disconnect')
+#NOD      begin
+#        response = @resource['disconnect'].get
+#      rescue UnauthorizedError
         # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
         # Disconnect doesn't require you're authenticated.
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
-      ensure
+#      ensure
         @connected = false
         @server_version = nil
-        @session_id = nil
         @user = nil
         @password = nil
         @database = nil
-        @resource = nil
         Orientdb4r::logger.debug 'disconnected from server'
-      end
+#      end
     end
 
 
@@ -166,7 +177,9 @@ module Orientdb4r
 
       limit = ''
       limit = "/#{options[:limit]}" if !options.nil? and options.include?(:limit)
-      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}#{limit}"].get
+      node = a_node
+      response = node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
+#NOD      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}#{limit}"].get
       entries = process_response(response)
       rslt = entries['result']
       # mixin all document entries (they have '@class' attribute)
@@ -291,17 +304,39 @@ module Orientdb4r
 
     private
 
-      ###
-      # Gets URL of the REST interface.
-      def url
-        "http#{'s' if ssl}://#{host}:#{port}"
+      ####
+      # Processes a HTTP response.
+      def process_response(response)
+        raise ArgumentError, 'response is null' if response.nil?
+
+        # return code
+        if 200 != response.code and 2 == (response.code / 100)
+          Orientdb4r::logger.warn "expected return code 200, but received #{response.code}"
+        elsif 401 == response.code
+          raise UnauthorizedError, '401 Unauthorized'
+        elsif 200 != response.code
+          msg = response.body.gsub("\n", ' ')
+          msg = "#{msg[0..100]} ..." if msg.size > 100
+          raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{msg}"
+        end
+
+        content_type = response.headers[:content_type]
+        content_type ||= 'text/plain'
+
+        rslt = case
+          when content_type.start_with?('text/plain')
+            response.body
+          when content_type.start_with?('application/json')
+            ::JSON.parse(response.body)
+          else
+            raise OrientdbError, "unsuported content type: #{content_type}"
+          end
+
+        rslt
       end
 
-      ###
-      # ==== options
-      # * strict
-      # * warning
-      def process_response(response, options={})
+      # @deprecated
+      def process_restclient_response(response, options={})
         raise ArgumentError, 'response is null' if response.nil?
 
         # raise problem if other code than 200

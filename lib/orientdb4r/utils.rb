@@ -37,7 +37,7 @@ module Orientdb4r
     ###
     # Checks if a given string is either 'nil' or empty string.
     def blank?(str)
-      str.nil? or str.strip.empty?
+      str.nil? or (str.is_a? String and str.strip.empty?)
     end
 
     ###

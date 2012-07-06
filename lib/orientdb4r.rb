@@ -1,6 +1,7 @@
 require 'json'
-require 'rest_client'
+require 'base64'
 require 'logger'
+require 'rest_client'
 require 'orientdb4r/version'
 
 
@@ -14,6 +15,9 @@ module Orientdb4r
   autoload :HashExtension,  'orientdb4r/rest/model'
   autoload :OClass,         'orientdb4r/rest/model'
   autoload :ChainedError,   'orientdb4r/chained_error'
+  autoload :Node,           'orientdb4r/node'
+  autoload :RestNode,       'orientdb4r/rest/node'
+  autoload :RestClientNode, 'orientdb4r/rest/restclient_node'
 
 
   class << self
@@ -51,6 +55,10 @@ module Orientdb4r
   end
 
   ###
+  # Error indicating that access to the resource requires user authentication.
+  class UnauthorizedError < OrientdbError; end
+
+  ###
   # Error indicating problems with communicating with the database.
   class ConnectionError < OrientdbError; end
 
@@ -74,5 +82,6 @@ Orientdb4r::logger.info \
   "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"
 
 
-#client = Orientdb4r.client
-#client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+Orientdb4r::logger.level = Logger::DEBUG
+client = Orientdb4r.client
+client.connect :database => 'temp', :user => 'admin', :password => 'admin'
