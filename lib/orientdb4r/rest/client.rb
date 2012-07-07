@@ -39,6 +39,7 @@ module Orientdb4r
         @user = nil
         @password = nil
         @database = nil
+        @nodes.each { |node| node.cleanup }
         raise ConnectionError
       end
       rslt = process_response response
@@ -58,14 +59,6 @@ module Orientdb4r
 
       Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}, session=#{node.session_id}"
       @connected = true
-#NOD      rescue
-#        @connected = false
-#        @server_version = nil
-#        @user = nil
-#        @password = nil
-#        @database = nil
-#        raise ConnectionError
-#      end
       rslt
     end
 
@@ -84,6 +77,7 @@ module Orientdb4r
         @user = nil
         @password = nil
         @database = nil
+        @nodes.each { |node| node.cleanup }
         Orientdb4r::logger.debug 'disconnected from server'
       end
     end

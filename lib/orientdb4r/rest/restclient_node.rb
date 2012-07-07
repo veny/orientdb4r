@@ -5,6 +5,9 @@ module Orientdb4r
   # accessible view REST API and 'rest-client' library on the client side.
   class RestClientNode < RestNode
 
+    attr_reader :session_id
+
+
     def oo_request(options) #:nodoc:
       begin
         options[:url] = "#{url}/#{options[:uri]}"
@@ -22,6 +25,8 @@ module Orientdb4r
 
 
     def request(options) #:nodoc:
+      raise OrientdbError, 'long life connection not initialized' if @resource.nil?
+
       data = options[:data]
       options.delete :data
       data = '' if data.nil? and :post == options[:method] # POST has to have data
@@ -51,6 +56,13 @@ module Orientdb4r
       @resource = ::RestClient::Resource.new(url, \
             :user => user, :password => password, \
             :cookies => { SESSION_COOKIE_NAME => session_id})
+    end
+
+
+    def cleanup #:nodoc:
+      @session_id = nil
+      @basic_auth = nil
+      @resource = nil
     end
 
   end

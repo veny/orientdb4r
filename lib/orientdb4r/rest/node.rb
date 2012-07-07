@@ -8,7 +8,7 @@ module Orientdb4r
     # Name of cookie that represents a session.
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
-    attr_reader :ssl, :session_id, :basic_auth
+    attr_reader :ssl
 
     ###
     # Constructor.
@@ -16,13 +16,6 @@ module Orientdb4r
       super(host, port)
       raise ArgumentError, 'ssl flag cannot be blank' if blank?(ssl)
       @ssl = ssl
-    end
-
-
-    def cleanup #:nodoc:
-      @session_id = nil
-      @basic_auth = nil
-      @connection = nil
     end
 
 
