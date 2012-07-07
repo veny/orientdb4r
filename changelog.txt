@@ -1,0 +1,8 @@
+0.3.0 07/x/12
+===============
+- 'rest-client' replaced by 'excon' for HTTP communication with Keep-Alive
+- introduced support for distributed server
+
+0.3.0 07/07/12
+- changed design to support distributed server
+- added method Client#class_exists?
