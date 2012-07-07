@@ -7,9 +7,9 @@ module Orientdb4r
 
     def oo_request(options) #:nodoc:
       begin
-        response = ::RestClient::Request.new( \
-            :method => options[:method], :url => "#{url}/#{options[:uri]}", \
-            :user => options[:user], :password => options[:password]).execute
+        options[:url] = "#{url}/#{options[:uri]}"
+        options.delete :uri
+        response = ::RestClient::Request.new(options).execute
       rescue ::RestClient::Unauthorized
         # fake the response object
         response = "401 Unauthorized"
@@ -22,9 +22,16 @@ module Orientdb4r
 
 
     def request(options) #:nodoc:
+      data = options[:data]
+      options.delete :data
+      data = '' if data.nil? and :post == options[:method] # POST has to have data
       begin
         # e.g. @resource['disconnect'].get
-        response = @resource[options[:uri]].send options[:method].to_sym
+        if data.nil?
+          response = @resource[options[:uri]].send options[:method].to_sym
+        else
+          response = @resource[options[:uri]].send options[:method].to_sym, data
+        end
       rescue ::RestClient::Unauthorized
         # fake the response object
         response = "401 Unauthorized"

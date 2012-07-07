@@ -82,6 +82,6 @@ Orientdb4r::logger.info \
   "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"
 
 
-Orientdb4r::logger.level = Logger::DEBUG
-client = Orientdb4r.client
-client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+#Orientdb4r::logger.level = Logger::DEBUG
+#client = Orientdb4r.client
+#client.connect :database => 'temp', :user => 'admin', :password => 'admin'

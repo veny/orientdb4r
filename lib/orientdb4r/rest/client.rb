@@ -17,9 +17,6 @@ module Orientdb4r
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
       verify_and_sanitize_options(options, options_pattern)
-#NOD      @host = options[:host]
-#NOD      @port = options[:port]
-#NOD      @ssl = options[:ssl]
 
       @nodes << RestClientNode.new(options[:host], options[:port], options[:ssl])
     end
@@ -52,10 +49,10 @@ module Orientdb4r
 #NOD        response = ::RestClient::Request.new(:method => :get, :url => "#{url}/connect/#{@database}", \
 #            :user => user, :password => password).execute
 #        @session_id = response.cookies[SESSION_COOKIE_NAME]
-
-        # resource used for all request
-        @resource = ::RestClient::Resource.new(node.url, \
-            :user => user, :password => password, :cookies => { RestNode::SESSION_COOKIE_NAME => node.session_id})
+#
+#        # resource used for all request
+#        @resource = ::RestClient::Resource.new(node.url, \
+#            :user => user, :password => password, :cookies => { RestNode::SESSION_COOKIE_NAME => node.session_id})
 
       # try to read server version
       if rslt.include? 'server'
@@ -85,36 +82,33 @@ module Orientdb4r
     def disconnect #:nodoc:
       return unless @connected
 
-      node = a_node
-      node.request(:method => :get, :uri => 'disconnect')
-#NOD      begin
-#        response = @resource['disconnect'].get
+      begin
+        a_node.request(:method => :get, :uri => 'disconnect')
+#NOD        response = @resource['disconnect'].get
 #      rescue UnauthorizedError
         # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
         # Disconnect doesn't require you're authenticated.
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
-#      ensure
+      ensure
         @connected = false
         @server_version = nil
         @user = nil
         @password = nil
         @database = nil
         Orientdb4r::logger.debug 'disconnected from server'
-#      end
+      end
     end
 
 
     def server(options={}) #:nodoc:
-      # 'server' does NOT use the RestClient Resource to construct the HTTP request
-
       options_pattern = { :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
-        response = resource['server'].get
+        # uses one-off request because of additional authentication to the server
+        response = a_node.oo_request :method => :get, :user => u, :password => p, :uri => 'server'
       rescue
         raise OrientdbError
       end
@@ -133,9 +127,12 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
+#NOD      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
-        response = resource["database/#{options[:database]}/#{options[:type]}"].post ''
+        # uses one-off request because of additional authentication to the server
+        response = a_node.oo_request :method => :post, :user => u, :password => p, \
+            :uri => "database/#{options[:database]}/#{options[:type]}"
+#NOD        response = resource["database/#{options[:database]}/#{options[:type]}"].post ''
       rescue
         raise OrientdbError
       end
@@ -157,9 +154,12 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
+#NOD      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
-        response = resource["database/#{options[:database]}"].get
+        # uses one-off request because of additional authentication to the server
+        response = a_node.oo_request :method => :get, :user => u, :password => p, \
+            :uri => "database/#{options[:database]}"
+#NOD        response = resource["database/#{options[:database]}"].get
       rescue
         raise NotFoundError
       end
@@ -177,8 +177,11 @@ module Orientdb4r
 
       limit = ''
       limit = "/#{options[:limit]}" if !options.nil? and options.include?(:limit)
-      node = a_node
-      response = node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
+      begin
+        response = a_node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
+      rescue
+        raise NotFoundError
+      end
 #NOD      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}#{limit}"].get
       entries = process_response(response)
       rslt = entries['result']
@@ -191,14 +194,12 @@ module Orientdb4r
     def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
       begin
-#puts "REQ command/#{@database}/sql/#{CGI::escape(sql)}"
-        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
-        rslt = process_response(response)
-        rslt
-#puts "RESP #{response.body}"
+#NOD        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
+        response = a_node.request(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
       rescue
         raise OrientdbError
       end
+      process_response(response)
     end
 
 
@@ -209,7 +210,8 @@ module Orientdb4r
 
       if compare_versions(server_version, '1.1.0') >= 0
         begin
-          response = @resource["class/#{@database}/#{name}"].get
+#NOD          response = @resource["class/#{@database}/#{name}"].get
+          response = a_node.request(:method => :get, :uri => "class/#{@database}/#{name}")
         rescue
           raise NotFoundError
         end
@@ -218,8 +220,13 @@ module Orientdb4r
       else
         # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
         # workaround - use metadate delivered by 'connect'
-        response = @resource["connect/#{@database}"].get
-        connect_info = process_response(response, :mode => :strict)
+        begin
+          response = a_node.request(:method => :get, :uri => "connect/#{@database}")
+#          response = @resource["connect/#{@database}"].get
+        rescue
+          raise NotFoundError
+        end
+        connect_info = process_response response
 
         classes = connect_info['classes'].select { |i| i['name'] == name }
         raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
@@ -244,7 +251,9 @@ module Orientdb4r
 
     def create_document(doc)
       begin
-        response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
+        response = a_node.request(:method => :post, :uri => "document/#{@database}", \
+            :content_type => 'application/json', :data => doc.to_json)
+#NOD        response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
       rescue
         raise DataError
       end
@@ -260,7 +269,8 @@ module Orientdb4r
       rid = rid[1..-1] if rid.start_with? '#'
 
       begin
-        response = @resource["document/#{@database}/#{rid}"].get
+#NOD        response = @resource["document/#{@database}/#{rid}"].get
+          response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
       rescue
         raise NotFoundError
       end
@@ -279,7 +289,9 @@ module Orientdb4r
       rid = rid[1..-1] if rid.start_with? '#'
 
       begin
-        @resource["document/#{@database}/#{rid}"].put doc.to_json, :content_type => 'application/json'
+        a_node.request(:method => :put, :uri => "document/#{@database}/#{rid}", \
+            :content_type => 'application/json', :data => doc.to_json)
+#NOD        @resource["document/#{@database}/#{rid}"].put doc.to_json, :content_type => 'application/json'
       rescue
         raise DataError
       end
@@ -293,7 +305,8 @@ module Orientdb4r
       rid = rid[1..-1] if rid.start_with? '#'
 
       begin
-        response = @resource["document/#{@database}/#{rid}"].delete
+        response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
+#NOD        response = @resource["document/#{@database}/#{rid}"].delete
       rescue
         raise DataError
       end

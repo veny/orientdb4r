@@ -77,7 +77,7 @@ module Orientdb4r
       rslt = true
       begin
         get_database options
-      rescue NotFoundError
+      rescue OrientdbError
         rslt = false
       end
       rslt
@@ -161,8 +161,9 @@ module Orientdb4r
       opt_pattern = { :mode => :nil }
       verify_options(options, opt_pattern)
       if :strict == options[:mode]
-        response = @resource["connect/#{@database}"].get
-        connect_info = process_response(response, :mode => :strict)
+        response = a_node.request(:method => :get, :uri => "connect/#{@database}") # TODO there cannot be REST
+#NOD        response = @resource["connect/#{@database}"].get
+        connect_info = process_response response
         children = connect_info['classes'].select { |i| i['superClass'] == name }
         unless children.empty?
           raise OrientdbError, "class is super-class, cannot be deleted, name=#{name}"
