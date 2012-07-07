@@ -9,7 +9,6 @@ module Orientdb4r
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-#NOD    attr_reader :host, :port, :ssl, :user, :password, :database, :session_id
     attr_reader :user, :password, :database
 
 
@@ -46,14 +45,6 @@ module Orientdb4r
       node.post_connect(user, password, response)
       decorate_classes_with_model(rslt['classes'])
 
-#NOD        response = ::RestClient::Request.new(:method => :get, :url => "#{url}/connect/#{@database}", \
-#            :user => user, :password => password).execute
-#        @session_id = response.cookies[SESSION_COOKIE_NAME]
-#
-#        # resource used for all request
-#        @resource = ::RestClient::Resource.new(node.url, \
-#            :user => user, :password => password, :cookies => { RestNode::SESSION_COOKIE_NAME => node.session_id})
-
       # try to read server version
       if rslt.include? 'server'
         @server_version = rslt['server']['version']
@@ -84,8 +75,6 @@ module Orientdb4r
 
       begin
         a_node.request(:method => :get, :uri => 'disconnect')
-#NOD        response = @resource['disconnect'].get
-#      rescue UnauthorizedError
         # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
         # Disconnect doesn't require you're authenticated.
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
@@ -127,12 +116,10 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-#NOD      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
         # uses one-off request because of additional authentication to the server
         response = a_node.oo_request :method => :post, :user => u, :password => p, \
             :uri => "database/#{options[:database]}/#{options[:type]}"
-#NOD        response = resource["database/#{options[:database]}/#{options[:type]}"].post ''
       rescue
         raise OrientdbError
       end
@@ -154,12 +141,10 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-#NOD      resource = ::RestClient::Resource.new(url, :user => u, :password => p)
       begin
         # uses one-off request because of additional authentication to the server
         response = a_node.oo_request :method => :get, :user => u, :password => p, \
             :uri => "database/#{options[:database]}"
-#NOD        response = resource["database/#{options[:database]}"].get
       rescue
         raise NotFoundError
       end
@@ -182,7 +167,6 @@ module Orientdb4r
       rescue
         raise NotFoundError
       end
-#NOD      response = @resource["query/#{@database}/sql/#{CGI::escape(sql)}#{limit}"].get
       entries = process_response(response)
       rslt = entries['result']
       # mixin all document entries (they have '@class' attribute)
@@ -194,7 +178,6 @@ module Orientdb4r
     def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
       begin
-#NOD        response = @resource["command/#{@database}/sql/#{CGI::escape(sql)}"].post ''
         response = a_node.request(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
       rescue
         raise OrientdbError
@@ -210,7 +193,6 @@ module Orientdb4r
 
       if compare_versions(server_version, '1.1.0') >= 0
         begin
-#NOD          response = @resource["class/#{@database}/#{name}"].get
           response = a_node.request(:method => :get, :uri => "class/#{@database}/#{name}")
         rescue
           raise NotFoundError
@@ -222,7 +204,6 @@ module Orientdb4r
         # workaround - use metadate delivered by 'connect'
         begin
           response = a_node.request(:method => :get, :uri => "connect/#{@database}")
-#          response = @resource["connect/#{@database}"].get
         rescue
           raise NotFoundError
         end
@@ -253,7 +234,6 @@ module Orientdb4r
       begin
         response = a_node.request(:method => :post, :uri => "document/#{@database}", \
             :content_type => 'application/json', :data => doc.to_json)
-#NOD        response = @resource["document/#{@database}"].post doc.to_json, :content_type => 'application/json'
       rescue
         raise DataError
       end
@@ -269,8 +249,7 @@ module Orientdb4r
       rid = rid[1..-1] if rid.start_with? '#'
 
       begin
-#NOD        response = @resource["document/#{@database}/#{rid}"].get
-          response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
+        response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
       rescue
         raise NotFoundError
       end
@@ -291,7 +270,6 @@ module Orientdb4r
       begin
         a_node.request(:method => :put, :uri => "document/#{@database}/#{rid}", \
             :content_type => 'application/json', :data => doc.to_json)
-#NOD        @resource["document/#{@database}/#{rid}"].put doc.to_json, :content_type => 'application/json'
       rescue
         raise DataError
       end
@@ -306,7 +284,6 @@ module Orientdb4r
 
       begin
         response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
-#NOD        response = @resource["document/#{@database}/#{rid}"].delete
       rescue
         raise DataError
       end
