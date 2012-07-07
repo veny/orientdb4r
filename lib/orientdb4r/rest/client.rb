@@ -197,7 +197,7 @@ module Orientdb4r
         rescue
           raise NotFoundError
         end
-        rslt = process_response(response, :mode => :strict)
+        rslt = process_response(response)
         classes = [rslt]
       else
         # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
