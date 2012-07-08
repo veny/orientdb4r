@@ -8,7 +8,7 @@ module Orientdb4r
     # Name of cookie that represents a session.
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
-    attr_reader :ssl
+    attr_reader :ssl, :session_id
 
     ###
     # Constructor.
@@ -31,10 +31,6 @@ module Orientdb4r
     # after successful connect.
     def post_connect(user, password, http_response)
       raise NotImplementedError, 'this should be overridden by subclass'
-
-# excon
-#      cookies = CGI::Cookie::parse(http_response.headers['Set-Cookie'])
-#      @session_id = cookies[SESSION_COOKIE_NAME][0]
     end
 
 
@@ -59,20 +55,6 @@ module Orientdb4r
       b64 = Base64.encode64("#{user}:#{password}").delete("\r\n")
       "Basic #{b64}"
     end
-
-
-# excon   ###
-#    # Get request headers prepared with session ID and Basic Auth.
-#    def headers
-#      {'Authorization' => @basic_auth, 'Cookie' => "#{SESSION_COOKIE_NAME}=#{session_id}"}
-#    end
-
-# excon   ###
-#    # Gets a connection object which is reusable across multiple requests.
-#    def connection
-#      @connection = Excon.new(url) if @connection.nil?
-#      @connection
-#    end
 
   end
 

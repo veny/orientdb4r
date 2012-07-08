@@ -17,6 +17,7 @@ module Orientdb4r
   autoload :Node,           'orientdb4r/node'
   autoload :RestNode,       'orientdb4r/rest/node'
   autoload :RestClientNode, 'orientdb4r/rest/restclient_node'
+  autoload :ExconNode,      'orientdb4r/rest/excon_node'
 
 
   class << self

@@ -18,6 +18,7 @@ module Orientdb4r
       verify_and_sanitize_options(options, options_pattern)
 
       @nodes << RestClientNode.new(options[:host], options[:port], options[:ssl])
+#      @nodes << ExconNode.new(options[:host], options[:port], options[:ssl])
     end
 
 
@@ -305,6 +306,7 @@ module Orientdb4r
         end
 
         content_type = response.headers[:content_type]
+#excon        content_type = response.headers['Content-Type']
         content_type ||= 'text/plain'
 
         rslt = case
