@@ -1,7 +1,6 @@
 require 'json'
 require 'base64'
 require 'logger'
-require 'rest_client'
 require 'orientdb4r/version'
 
 
