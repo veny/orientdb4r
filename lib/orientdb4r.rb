@@ -59,6 +59,10 @@ module Orientdb4r
   class UnauthorizedError < OrientdbError; end
 
   ###
+  # Error indicating that the server encountered an unexpected condition which prevented it from fulfilling the request.
+  class ServerError < OrientdbError; end
+
+  ###
   # Error indicating problems with communicating with the database.
   class ConnectionError < OrientdbError; end
 

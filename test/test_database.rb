@@ -42,6 +42,10 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::UnauthorizedError do
       @client.connect :database => 'unknown_db', :user => 'admin', :password => 'admin'
     end
+    # bad DB name with '/' => wrong REST resource
+    assert_raise Orientdb4r::ServerError do
+      @client.connect :database => 'temp/temp', :user => 'admin', :password => 'admin'
+    end
     # bad credentials
     assert_raise Orientdb4r::UnauthorizedError do
       @client.connect :database => 'temp', :user => 'admin1', :password => 'admin'
@@ -97,7 +101,7 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # GET DATABASE
   def test_get_database
-    # not connected
+    # not connected - allowed with additional authentication
     assert_nothing_thrown do @client.get_database :database => 'temp', :user => 'admin', :password => 'admin' ; end
     assert_raise Orientdb4r::ConnectionError do @client.get_database; end
     # connected
@@ -108,12 +112,15 @@ class TestDatabase < Test::Unit::TestCase
     assert_not_nil rslt
     assert_instance_of Hash, rslt
     assert rslt.include? 'classes'
-    assert @client.database_exists?(:database => 'temp', :user => 'admin', :password => 'admin')
-    assert @client.database_exists?(:database => 'temp') # use credentials of logged in user
 
     # bad databases
     assert_raise Orientdb4r::UnauthorizedError do @client.get_database :database => 'UnknownDB'; end
-    assert_raise Orientdb4r::NotFoundError do @client.get_database :database => 'temp/admin'; end
+    assert_raise Orientdb4r::ServerError do @client.get_database :database => 'temp/admin'; end # bad REST resource
+
+
+    # database_exists?
+    assert @client.database_exists?(:database => 'temp', :user => 'admin', :password => 'admin')
+    assert @client.database_exists?(:database => 'temp') # use credentials of logged in user
     assert !@client.database_exists?(:database => 'UnknownDB')
     assert !@client.database_exists?(:database => 'temp/admin')
   end

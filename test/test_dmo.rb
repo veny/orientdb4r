@@ -52,11 +52,11 @@ class TestDmo < Test::Unit::TestCase
     assert_equal urids.size, @client.query("SELECT FROM #{CLASS} WHERE prop2 = 'linkset'")[0]['friends'].size
 
     # table doesn't exist
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ServerError do
       @client.command "INSERT INTO #{CLASS}x (prop1, prop2, friends) VALUES (1, 'linkset', [#{urids.join(',')}])"
     end
     # bad syntax
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ServerError do
       @client.command 'xxx'
     end
 
@@ -94,15 +94,17 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 1, gr.select { |e| e if e['@class'] == 'ORole' }.size
 
     # table doesn't exist
-    assert_raise Orientdb4r::NotFoundError do
+    assert_raise Orientdb4r::ServerError do
       @client.query 'SELECT FROM OUserX'
     end
     # bad syntax
-    assert_raise Orientdb4r::NotFoundError do
+    assert_raise Orientdb4r::ServerError do
       @client.query 'xxx'
     end
+    # record not found
+    assert_raise Orientdb4r::NotFoundError do @client.query 'SELECT FROM #4:1111'; end
     # used for INSERT
-    assert_raise Orientdb4r::NotFoundError do
+    assert_raise Orientdb4r::ServerError do
       @client.query "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (0, 'string0', [])"
     end
   end

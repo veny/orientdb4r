@@ -1,4 +1,4 @@
-#require 'excon'
+require 'excon'
 
 module Orientdb4r
 
@@ -32,7 +32,7 @@ module Orientdb4r
 #      begin
         # e.g. connection.request(:method => :get, :path => path, :query => {})
 #        if data.nil?
-          response = @connection.request(:method => options[:method], :path => options[:uri])
+          response = @connection.request(:method => options[:method], :path => options[:uri], :headers => headers)
 #        else
 #          response = @resource[options[:uri]].send options[:method].to_sym, data
 #        end

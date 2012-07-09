@@ -13,13 +13,10 @@ module Orientdb4r
         options[:url] = "#{url}/#{options[:uri]}"
         options.delete :uri
         response = ::RestClient::Request.new(options).execute
-      rescue ::RestClient::Unauthorized
-        # fake the response object
-        response = "401 Unauthorized"
-        def response.code
-          401
-        end
+      rescue ::RestClient::Exception => e
+        response = transform_error2_response(e)
       end
+
       response
     end
 
@@ -37,12 +34,8 @@ module Orientdb4r
         else
           response = @resource[options[:uri]].send options[:method].to_sym, data
         end
-      rescue ::RestClient::Unauthorized
-        # fake the response object
-        response = "401 Unauthorized"
-        def response.code
-          401
-        end
+      rescue ::RestClient::Exception => e
+        response = transform_error2_response(e)
       end
 
       response
@@ -64,6 +57,23 @@ module Orientdb4r
       @basic_auth = nil
       @resource = nil
     end
+
+
+    private
+
+      ###
+      # Fakes an error thrown by the library into a response object with methods
+      # 'code' and 'body'.
+      def transform_error2_response(error)
+        response = ["#{error.message}: #{error.http_body}", error.http_code]
+        def response.body
+          self[0]
+        end
+        def response.code
+          self[1]
+        end
+        response
+      end
 
   end
 

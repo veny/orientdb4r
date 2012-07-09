@@ -145,7 +145,7 @@ module Orientdb4r
       rslt = true
       begin
         get_class name
-      rescue NotFoundError
+      rescue OrientdbError
         rslt = false
       end
       rslt

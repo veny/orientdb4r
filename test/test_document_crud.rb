@@ -40,6 +40,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     end
     rid = @client.create_document({ '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
     doc = @client.get_document rid
+    assert_equal CLASS, doc.doc_class
+    assert_equal rid, doc.doc_rid
     assert_equal 0, doc.doc_version
 
     # no effect if an unknown class
@@ -51,6 +53,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_nil doc.doc_class
     assert_equal 11, doc['a']
     assert_equal 'text1', doc['b']
+    # or missing class
+    assert_nothing_thrown do @client.create_document({ 'a' => 1, 'b' => 'text' }); end
 
     # no mandatory property
     assert_raise Orientdb4r::DataError do @client.create_document({ '@class' => CLASS, 'prop1' => 1 }); end
@@ -84,6 +88,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     # not existing RID
     rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid1; end
+    # bad RID format
+    assert_raise Orientdb4r::ServerError do @client.get_document('xx'); end
   end
 
   ###
@@ -129,8 +135,15 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_not_nil doc
 
     assert_nothing_thrown do @client.delete_document rid; end
-    # already deleted
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid; end
+
+    # already deleted
+    assert_raise Orientdb4r::NotFoundError do @client.delete_document rid; end
+
+    # not existing RID
+    assert_raise Orientdb4r::NotFoundError do @client.delete_document '#4:1111'; end
+    # bad RID format
+    assert_raise Orientdb4r::ServerError do @client.delete_document 'xx'; end
   end
 
 end

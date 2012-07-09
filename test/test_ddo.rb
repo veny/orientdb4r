@@ -68,7 +68,7 @@ class TestDdo < Test::Unit::TestCase
     assert @client.class_exists?(CLASS)
     assert_nothing_thrown do @client.get_class(CLASS); end # raises an Error if no class found
     # already exist
-    assert_raise Orientdb4r::OrientdbError do @client.create_class(CLASS); end
+    assert_raise Orientdb4r::ServerError do @client.create_class(CLASS); end
 
     # create with :force=>true
     assert_nothing_thrown do @client.create_class(CLASS, :force => true); end
@@ -85,7 +85,7 @@ class TestDdo < Test::Unit::TestCase
     assert_equal 'OUser', clazz.super_class
 
     # bad super class
-    assert_raise Orientdb4r::OrientdbError do @client.create_class(CLASS, :extends => 'nonExistingSuperClass'); end
+    assert_raise Orientdb4r::ServerError do @client.create_class(CLASS, :extends => 'nonExistingSuperClass'); end
   end
 
 
@@ -121,7 +121,7 @@ class TestDdo < Test::Unit::TestCase
     assert_nil clazz.property(:prop1).linked_class
 
     # already exist
-    assert_raise Orientdb4r::OrientdbError do @client.create_property(CLASS, 'prop1', :integer); end
+    assert_raise Orientdb4r::ServerError do @client.create_property(CLASS, 'prop1', :integer); end
   end
 
 
@@ -135,12 +135,12 @@ class TestDdo < Test::Unit::TestCase
     assert_equal 'OUser', clazz.property(:friends).linked_class
 
     # unknow linked-class
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ServerError do
       @client.create_property(CLASS, 'friends2', :linkset, :linked_class => 'UnknownClass')
     end
 
     # already exist
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ServerError do
       @client.create_property(CLASS, 'friends', :linkset, :linked_class => 'OUser');
     end
   end

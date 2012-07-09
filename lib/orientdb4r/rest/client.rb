@@ -90,12 +90,9 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      begin
-        # uses one-off request because of additional authentication to the server
-        response = a_node.oo_request :method => :get, :user => u, :password => p, :uri => 'server'
-      rescue
-        raise OrientdbError
-      end
+
+      # uses one-off request because of additional authentication to the server
+      response = a_node.oo_request :method => :get, :user => u, :password => p, :uri => 'server'
       process_response(response)
     end
 
@@ -111,13 +108,10 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      begin
-        # uses one-off request because of additional authentication to the server
-        response = a_node.oo_request :method => :post, :user => u, :password => p, \
-            :uri => "database/#{options[:database]}/#{options[:type]}"
-      rescue
-        raise OrientdbError
-      end
+
+      # uses one-off request because of additional authentication to the server
+      response = a_node.oo_request :method => :post, :user => u, :password => p, \
+          :uri => "database/#{options[:database]}/#{options[:type]}"
       process_response(response)
     end
 
@@ -136,13 +130,12 @@ module Orientdb4r
 
       u = options.include?(:user) ? options[:user] : user
       p = options.include?(:password) ? options[:password] : password
-      begin
-        # uses one-off request because of additional authentication to the server
-        response = a_node.oo_request :method => :get, :user => u, :password => p, \
-            :uri => "database/#{options[:database]}"
-      rescue
-        raise NotFoundError
-      end
+
+      # uses one-off request because of additional authentication to the server
+      response = a_node.oo_request :method => :get, :user => u, :password => p, \
+          :uri => "database/#{options[:database]}"
+
+      # NotFoundError cannot be raised - no way how to recognize from 401 bad auth
       process_response(response)
     end
 
@@ -157,12 +150,12 @@ module Orientdb4r
 
       limit = ''
       limit = "/#{options[:limit]}" if !options.nil? and options.include?(:limit)
-      begin
-        response = a_node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
-      rescue
-        raise NotFoundError
+
+      response = a_node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
+      entries = process_response(response) do
+        raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
-      entries = process_response(response)
+
       rslt = entries['result']
       # mixin all document entries (they have '@class' attribute)
       rslt.each { |doc| doc.extend Orientdb4r::DocumentMetadata unless doc['@class'].nil? }
@@ -172,11 +165,7 @@ module Orientdb4r
 
     def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
-      begin
-        response = a_node.request(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
-      rescue
-        raise OrientdbError
-      end
+      response = a_node.request(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
       process_response(response)
     end
 
@@ -187,22 +176,19 @@ module Orientdb4r
       raise ArgumentError, "class name is blank" if blank?(name)
 
       if compare_versions(server_version, '1.1.0') >= 0
-        begin
-          response = a_node.request(:method => :get, :uri => "class/#{@database}/#{name}")
-        rescue
-          raise NotFoundError
+        response = a_node.request(:method => :get, :uri => "class/#{@database}/#{name}")
+        rslt = process_response(response) do
+          raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
         end
-        rslt = process_response(response)
+
         classes = [rslt]
       else
         # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
         # workaround - use metadate delivered by 'connect'
-        begin
-          response = a_node.request(:method => :get, :uri => "connect/#{@database}")
-        rescue
-          raise NotFoundError
+        response = a_node.request(:method => :get, :uri => "connect/#{@database}")
+        connect_info = process_response(response) do
+          raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
         end
-        connect_info = process_response response
 
         classes = connect_info['classes'].select { |i| i['name'] == name }
         raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
@@ -226,13 +212,12 @@ module Orientdb4r
     # ----------------------------------------------------------------- DOCUMENT
 
     def create_document(doc)
-      begin
-        response = a_node.request(:method => :post, :uri => "document/#{@database}", \
-            :content_type => 'application/json', :data => doc.to_json)
-      rescue
-        raise DataError
+      response = a_node.request(:method => :post, :uri => "document/#{@database}", \
+          :content_type => 'application/json', :data => doc.to_json)
+      rid = process_response(response)  do
+        raise DataError, 'validation problem' if response.body =~ /OValidationException/
       end
-      rid = process_response(response)
+
       raise ArgumentError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
       rid
     end
@@ -243,12 +228,12 @@ module Orientdb4r
       # remove the '#' prefix
       rid = rid[1..-1] if rid.start_with? '#'
 
-      begin
-        response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
-      rescue
-        raise NotFoundError
+      response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
+      rslt = process_response(response) do
+        raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
+        raise NotFoundError, 'record not found' if response.body =~ /Record with id .* was not found/ # why after delete?
       end
-      rslt = process_response(response)
+
       rslt.extend Orientdb4r::DocumentMetadata
       rslt
     end
@@ -262,11 +247,11 @@ module Orientdb4r
       rid = doc.delete '@rid'
       rid = rid[1..-1] if rid.start_with? '#'
 
-      begin
-        a_node.request(:method => :put, :uri => "document/#{@database}/#{rid}", \
-            :content_type => 'application/json', :data => doc.to_json)
-      rescue
-        raise DataError
+      response = a_node.request(:method => :put, :uri => "document/#{@database}/#{rid}", \
+          :content_type => 'application/json', :data => doc.to_json)
+      process_response(response) do
+        raise DataError, 'concurrent modification' if response.body =~ /OConcurrentModificationException/
+        raise DataError, 'validation problem' if response.body =~ /OValidationException/
       end
       # empty http response
     end
@@ -277,10 +262,13 @@ module Orientdb4r
       # remove the '#' prefix
       rid = rid[1..-1] if rid.start_with? '#'
 
-      begin
-        response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
-      rescue
-        raise DataError
+      response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
+      process_response(response) do
+        # v1.1.0 identifies DELETE of already deleted record only with HTTP code 204
+        if compare_versions(server_version, '1.1.0') >= 0 and 204 == response.code
+          raise NotFoundError, 'record not found'
+        end
+        raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
       # empty http response
     end
@@ -294,19 +282,24 @@ module Orientdb4r
       def process_response(response)
         raise ArgumentError, 'response is null' if response.nil?
 
+        if block_given?
+          yield
+        end
+
+
         # return code
         if 200 != response.code and 2 == (response.code / 100)
           Orientdb4r::logger.warn "expected return code 200, but received #{response.code}"
         elsif 401 == response.code
-          raise UnauthorizedError, '401 Unauthorized'
+          raise UnauthorizedError, compose_error_message(response)
+        elsif 500 == response.code
+          raise ServerError, compose_error_message(response)
         elsif 200 != response.code
-          msg = response.body.gsub("\n", ' ')
-          msg = "#{msg[0..100]} ..." if msg.size > 100
-          raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{msg}"
+          raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{compose_error_message(response)}"
         end
 
         content_type = response.headers[:content_type]
-#excon        content_type = response.headers['Content-Type']
+#        content_type = response.headers['Content-Type']
         content_type ||= 'text/plain'
 
         rslt = case
@@ -320,6 +313,17 @@ module Orientdb4r
 
         rslt
       end
+
+
+      ###
+      # Composes message of an error raised if the HTTP response doesn't
+      # correspond with expectation.
+      def compose_error_message(http_response, max_len=200)
+        msg = http_response.body.gsub("\n", ' ')
+        msg = "#{msg[0..max_len]} ..." if msg.size > max_len
+        msg
+      end
+
 
       # @deprecated
       def process_restclient_response(response, options={})
