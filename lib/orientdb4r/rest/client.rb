@@ -17,8 +17,8 @@ module Orientdb4r
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
       verify_and_sanitize_options(options, options_pattern)
 
-      @nodes << RestClientNode.new(options[:host], options[:port], options[:ssl])
-#      @nodes << ExconNode.new(options[:host], options[:port], options[:ssl])
+      raise ArgumentError, 'no node type defined in context' unless Orientdb4r::context.include? :node_type
+      @nodes << Orientdb4r::context[:node_type].new(options[:host], options[:port], options[:ssl])
     end
 
 
@@ -294,8 +294,8 @@ module Orientdb4r
           raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{compose_error_message(response)}"
         end
 
-        content_type = response.headers[:content_type]
-#        content_type = response.headers['Content-Type']
+        content_type = response.headers[:content_type] if Orientdb4r::context[:node_type] == RestClientNode
+        content_type = response.headers['Content-Type'] if Orientdb4r::context[:node_type] == ExconNode
         content_type ||= 'text/plain'
 
         rslt = case
