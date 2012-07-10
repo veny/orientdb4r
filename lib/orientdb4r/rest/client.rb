@@ -264,10 +264,6 @@ module Orientdb4r
 
       response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
       process_response(response) do
-        # v1.1.0 identifies DELETE of already deleted record only with HTTP code 204
-        if compare_versions(server_version, '1.1.0') >= 0 and 204 == response.code
-          raise NotFoundError, 'record not found'
-        end
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
       # empty http response

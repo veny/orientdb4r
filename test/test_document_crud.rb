@@ -138,7 +138,10 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid; end
 
     # already deleted
-    assert_raise Orientdb4r::NotFoundError do @client.delete_document rid; end
+    # v1.1.0 allows call of DELETE on already deleted record (bug?!)
+    if @client.compare_versions(@client.server_version, '1.1.0') < 0
+      assert_raise Orientdb4r::NotFoundError do @client.delete_document rid; end
+    end
 
     # not existing RID
     assert_raise Orientdb4r::NotFoundError do @client.delete_document '#4:1111'; end
