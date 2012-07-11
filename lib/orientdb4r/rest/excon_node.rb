@@ -26,23 +26,16 @@ module Orientdb4r
     def request(options) #:nodoc:
       raise OrientdbError, 'long life connection not initialized' if @connection.nil?
 
-#      data = options[:data]
-#      options.delete :data
-#      data = '' if data.nil? and :post == options[:method] # POST has to have data
-#      begin
-        # e.g. connection.request(:method => :get, :path => path, :query => {})
-#        if data.nil?
-          response = @connection.request(:method => options[:method], :path => options[:uri], :headers => headers)
-#        else
-#          response = @resource[options[:uri]].send options[:method].to_sym, data
-#        end
-#      rescue
-#        # fake the response object
-#        response = "401 Unauthorized"
-#        def response.code
-#          401
-#        end
-#      end
+      head = headers
+      head['Content-Type'] = options[:content_type] if options.include? :content_type
+      options[:headers] = head
+
+      options[:body] = options[:data] if options.include? :data # just other naming convention
+      options.delete :data
+      options[:path] = options[:uri] if options.include? :uri   # just other naming convention
+      options.delete :uri
+
+      response = @connection.request options
 
       def response.code
         status
