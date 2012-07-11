@@ -8,6 +8,11 @@ module Orientdb4r
   class ExconNode < RestNode
 
 
+    def identification #:nodoc:
+      'excon'
+    end
+
+
     def oo_request(options) #:nodoc:
       address = "#{url}/#{options[:uri]}"
       headers = {}

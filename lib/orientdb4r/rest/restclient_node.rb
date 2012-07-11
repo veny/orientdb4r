@@ -8,6 +8,11 @@ module Orientdb4r
   class RestClientNode < RestNode
 
 
+    def identification #:nodoc:
+      'rest-client'
+    end
+
+
     def oo_request(options) #:nodoc:
       begin
         options[:url] = "#{url}/#{options[:uri]}"

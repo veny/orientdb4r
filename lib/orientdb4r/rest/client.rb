@@ -19,6 +19,7 @@ module Orientdb4r
 
       raise ArgumentError, 'no node type defined in context' unless Orientdb4r::context.include? :node_type
       @nodes << Orientdb4r::context[:node_type].new(options[:host], options[:port], options[:ssl])
+      Orientdb4r::logger.debug "client with communication driver: #{a_node.identification}"
     end
 
 
