@@ -284,13 +284,11 @@ module Orientdb4r
 
 
         # return code
-        if 200 != response.code and 2 == (response.code / 100)
-          Orientdb4r::logger.warn "expected return code 200, but received #{response.code}"
-        elsif 401 == response.code
+        if 401 == response.code
           raise UnauthorizedError, compose_error_message(response)
         elsif 500 == response.code
           raise ServerError, compose_error_message(response)
-        elsif 200 != response.code
+        elsif 2 != (response.code / 100)
           raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{compose_error_message(response)}"
         end
 
