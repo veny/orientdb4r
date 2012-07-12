@@ -31,17 +31,32 @@ module Elaboration
 
     def run
       threads = []
-#      1.upto(1) do
-#        threads << Thread.new do
-#          Orientdb4r::logger.info "started thread #{Thread.current}"
-          client.connect :database => db, :user => 'admin', :password => 'admin'
-          ARGV.each do |arg|
-            watch arg[2..-1].to_sym if arg =~ /^--\w/
+      thread_cnt = 1
+      thc = ARGV.select { |arg| arg if arg =~ /-th=\d+/ }
+      thread_cnt = thc[0][4..-1].to_i unless thc.empty?
+
+      if thread_cnt > 1
+        1.upto(thread_cnt) do
+          threads << Thread.new do
+            run_threaded
           end
-          client.disconnect
-#        end # Thread
-#      end
-#      threads.each { |th|  th.join }
+        end
+      else
+        run_threaded
+      end
+      threads.each { |th| th.join }
+    end
+
+
+    private
+
+    def run_threaded
+      Orientdb4r::logger.info "started thread #{Thread.current}"
+      client.connect :database => db, :user => 'admin', :password => 'admin'
+      ARGV.each do |arg|
+        watch arg[2..-1].to_sym if arg =~ /^--\w/
+      end
+      client.disconnect
     end
 
   end

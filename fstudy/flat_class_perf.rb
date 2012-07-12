@@ -1,4 +1,4 @@
-require 'elab_case'
+require 'study_case'
 
 # This class tests performance on a simple flat class.
 class FlatClassPerf < Elaboration::Case
@@ -20,7 +20,7 @@ class FlatClassPerf < Elaboration::Case
     client.command 'DELETE FROM User'
   end
   def data
-    1.upto(10000) do |i|
+    1.upto(10) do |i|
       Orientdb4r::logger.info "...done: #{i}" if 0 == (i % 1000)
       first_name = dg.word
       surname = dg.word
