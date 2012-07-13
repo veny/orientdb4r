@@ -7,55 +7,37 @@ class TechnicalFeasibility < FStudy::Case
 
 #  def db; 'perf'; end
 
+  # Dropes the document model.
   def drop
-    client.drop_class 'Community'
-    puts "droped class: Community"
-    client.drop_class 'OrgUnit'
-    puts "droped class: OrgUnit"
-    client.drop_class 'User'
-    puts "droped class: User"
+    classes_definition.reverse.each do |clazz|
+      client.drop_class clazz[:class]
+      puts "droped class: #{clazz[:class]}"
+    end
   end
+
+  # Creates the document model.
   def model
     drop
-    # OrgUnit
-    client.create_class 'OrgUnit' do |c|
-      c.property 'name', :string, :mandatory => true
-      c.property 'location', :string
-      c.link 'descendants', :linkset, 'OrgUnit'
-      # TODO rdbms_id
+    classes_definition.each do |clazz|
+      class_name = clazz.delete :class
+      client.create_class(class_name, clazz)
+      puts "created class: #{class_name}"
     end
-    puts "created class: OrgUnit"
-    # Community
-    client.create_class 'Community' do |c|
-      c.property 'name', :string, :mandatory => true
-      # TODO rdbms_id
-    end
-    puts "created class: Community"
-    # User
-    client.create_class 'User' do |c|
-      c.property 'username', :string, :mandatory => true
-      c.property 'email', :string, :mandatory => true
-      c.property 'firstname', :string, :mandatory => true
-      c.property 'surname', :string, :mandatory => true
-      # TODO rdbms_id, roles
-      c.link     'unit', :link, 'OrgUnit', :mandatory => true
-      c.link     'communities', :linkset, 'Community'
-    end
-    puts "created class: User"
-    client.create_class 'Content' do |c|
-      c.property 'title', :string, :mandatory => true
-      # TODO rdbms_id
-      c.link     'unit', :link, 'OrgUnit', :mandatory => true
-      c.link     'communities', :linkset, 'Community'
-    end
-    puts "created class: Content"
   end
+
+  # Deletes data.
   def del
-    client.command 'DELETE FROM User'
+    classes_definition.each do |clazz|
+      client.command "DELETE FROM #{clazz[:class]}"
+      puts "deleted from class: #{clazz[:class]}"
+    end
   end
+
+  # Prepares data.
   def data
-    insert_communities
-    insert_org_units
+    comm = insert_communities
+    units = insert_org_units
+puts units
   end
 
   def count
@@ -67,59 +49,117 @@ class TechnicalFeasibility < FStudy::Case
 
     def insert_communities
       communities = [
-        { '@class' => 'Community', :name => 'Pianists' },
-        { '@class' => 'Community', :name => 'Violinists' },
-        { '@class' => 'Community', :name => 'Dog fanciers' },
-        { '@class' => 'Community', :name => 'Cat fanciers' },
-        { '@class' => 'Community', :name => 'Soccer fans' },
-        { '@class' => 'Community', :name => 'Ski fans' },
-        { '@class' => 'Community', :name => 'Basket fans' },
-        { '@class' => 'Community', :name => 'Gourmets' },
-        { '@class' => 'Community', :name => 'Scifi reader' },
-        { '@class' => 'Community', :name => 'Comic reader' }
+        { :name => 'Pianists' },
+        { :name => 'Violinists' },
+        { :name => 'Dog fanciers' },
+        { :name => 'Cat fanciers' },
+        { :name => 'Soccer fans' },
+        { :name => 'Ski fans' },
+        { :name => 'Basket fans' },
+        { :name => 'Gourmets' },
+        { :name => 'Scifi reader' },
+        { :name => 'Comic reader' }
       ]
-      rids = []
       communities.each do |c|
         c['@class'] = 'Community'
-        rids << client.create_document(c)
+        c[:rid] = client.create_document(c)
       end
-      puts "created communities: #{rids}"
-      rids
+      puts "Created communities: #{communities.size}"
+      communities
     end
 
     def insert_org_units
-      root = { :name => 'Big Company', :descendants => [
-          { :name => 'Automotive', :descendants => [
-              { :name => 'Sales' },
-              { :name => 'Marketing' },
-              { :name => 'Design' }
-            ]
-          }, # Automotive
-          { :name => 'Research', :descendants => [
-              { :name => 'Scientist' },
-              { :name => 'Spies' }
-            ]
-          }, # Research
-          { :name => 'Company Infrastructure', :descendants => [
-              { :name => 'Accounting' },
-              { :name => 'Human Resources' , :descendants => [ { :name => 'Recruitment' } ] }
-            ]
-          } # Company Infrastructure
-        ]
-      } # Big Company
-      insert_org_unit_helper(root)
+      units = [
+          { :name => 'Big Company', :descendants => [ 'Automotive', 'Research', 'Company Infrastructure' ] },
+          { :name => 'Automotive', :descendants => [ 'Sales', 'Marketing', 'Design' ] },
+          { :name => 'Sales' },
+          { :name => 'Marketing' },
+          { :name => 'Design' },
+          { :name => 'Research', :descendants => [ 'Scientist', 'Spies' ] },
+          { :name => 'Scientist' },
+          { :name => 'Spies' },
+          { :name => 'Company Infrastructure', :descendants => [ 'Accounting', 'Human Resources' ] },
+          { :name => 'Accounting' },
+          { :name => 'Human Resources' , :descendants => [ 'Recruitment' ] },
+          { :name => 'Recruitment' }
+      ]
+      units.each { |unit| insert_org_unit_helper(unit, units) }
+      units
     end
+    def insert_org_unit_helper(unit, all)
+        return if unit.include? :rid
 
-    def insert_org_unit_helper(unit)
-        unit['@class'] = 'OrgUnit'
-        descendants = []
         if unit.include? :descendants
-          unit[:descendants].each do |d|
-            descendants << insert_org_unit_helper(d)
+          # recursion
+          unit[:descendants].each do |desc_name|
+            next_unit = all.select { |u| u if u[:name] == desc_name }[0]
+            insert_org_unit_helper(next_unit, all) unless next_unit.include? :rid
           end
         end
-        unit[:descendants] = descendants unless descendants.empty?
-        client.create_document(unit)
+
+        cloned = unit.clone
+        cloned['@class'] = 'OrgUnit'
+        cloned.delete :descendants
+
+        if unit.include? :descendants
+          descendants = []
+          unit[:descendants].each do |name|
+            descendants << all.select { |ou| ou if ou[:name] == name }[0][:rid]
+          end
+          cloned[:descendants] = descendants
+        end
+
+        rid = client.create_document(cloned)
+        unit[:rid] = rid
+    end
+
+    def insert_users(units, communities)
+      1.upto(10) do
+        firstname = dg.word
+        surname = dg.word
+        username =  "#{firstname}.#{surname}"
+        # random distribution of Units (1) & Communities (0..3)
+        unit = units[rand(units.size)]
+        comms = []
+        0.upto(rand(4)) { |i| comms << communities[rand(communities.size)] if i > 0 }
+
+        c.create_document({ '@class' => 'User', \
+                            :username => username, \
+                            :email => 'xx',\
+                            :firstname => firstname.capitalize, \
+                            :surname => surname.capitalize, \
+                            :unit => unit[:rid], \
+                            :communities => comms })
+      end
+    end
+
+    def classes_definition
+      # TODO rdbms_id
+      [
+        { :class => 'OrgUnit', :properties => [
+          { :property => 'name', :type => :string, :mandatory => true },
+          { :property => 'domain', :type => :string },
+          { :property => 'descendants',  :type => :linkset, :linked_class => 'OrgUnit' }]},
+        { :class => 'Community', :properties => [
+            { :property => 'name', :type => :string, :mandatory => true }]},
+        { :class => 'User', :properties => [
+            { :property => 'email', :type => :string, :mandatory => true },
+            { :property => 'firstname', :type => :string, :mandatory => true },
+            { :property => 'surname', :type => :string, :mandatory => true },
+            { :property => 'unit',  :type => :link, :linked_class => 'OrgUnit', :mandatory => true },
+            { :property => 'communities',  :type => :linkset, :linked_class => 'Community' }]},
+        { :class => 'Content', :properties => [
+            { :property => 'title', :type => :string, :mandatory => true },
+            { :property => 'author',  :type => :link, :linked_class => 'User', :mandatory => true },
+            { :property => 'accessible_in',  :type => :linkset, :linked_class => 'Community' }]},
+        { :class => 'Article', :extends => 'Content', :properties => [
+            { :property => 'body', :type => :string, :mandatory => true }]},
+        { :class => 'Gallery', :extends => 'Content', :properties => [
+            { :property => 'description', :type => :string, :mandatory => true }]},
+        { :class => 'Term', :extends => 'Content', :properties => [
+            { :property => 'from', :type => :string, :mandatory => true },
+            { :property => 'to', :type => :string, :mandatory => true }]}
+      ]
     end
 
 end
