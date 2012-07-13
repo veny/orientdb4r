@@ -1,7 +1,7 @@
 require 'study_case'
 
 # This class tests performance on a simple flat class.
-class FlatClassPerf < Elaboration::Case
+class FlatClassPerf < FStudy::Case
 
 #  def db; 'perf'; end
 

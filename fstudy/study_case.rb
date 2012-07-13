@@ -1,6 +1,6 @@
 require 'orientdb4r'
 
-module Elaboration
+module FStudy
 
   ###
   # This class represents a elaboration infrastructure.

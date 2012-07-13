@@ -183,6 +183,44 @@ class TestDdo < Test::Unit::TestCase
     assert_nil user.min
     assert_nil user.max
     assert_equal 'OUser', user.linked_class
+
+
+    # properties direct as parametr
+    @client.drop_class CLASS
+    assert_nothing_thrown do
+      @client.create_class(CLASS, :properties => [
+          { :property => 'prop1_q', :type => :integer },
+          { :property => 'prop2_q', :type => :string, :mandatory => true, :notnull => true, :min => 1, :max => 99 },
+          { :property => 'user_q',  :type => :linkset, :linked_class => 'OUser', :mandatory => true }
+      ])
+    end
+
+    clazz = @client.get_class(CLASS)
+    assert_equal 3, clazz.properties.size
+
+    prop1 = clazz.property(:prop1_q)
+    assert_equal 'INTEGER', prop1.type
+    assert !prop1.mandatory
+    assert !prop1.not_null
+    assert_nil prop1.min
+    assert_nil prop1.max
+    assert_nil prop1.linked_class
+
+    prop2 = clazz.property(:prop2_q)
+    assert_equal 'STRING', prop2.type
+    assert prop2.mandatory
+    assert prop2.not_null
+    assert_equal '1', prop2.min
+    assert_equal '99',  prop2.max
+    assert_nil prop2.linked_class
+
+    user = clazz.property(:user_q)
+    assert_equal 'LINKSET', user.type
+    assert user.mandatory
+    assert !user.not_null
+    assert_nil user.min
+    assert_nil user.max
+    assert_equal 'OUser', user.linked_class
   end
 
 end

@@ -2,7 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.2.8', '2012-07-11', "New exception handling"],
+    ['0.2.8', '2012-07-xx', "New exception handling, added feature Client#create_class(:properties)"],
     ['0.2.7', '2012-07-07', "Added method Client#class_exists?"],
     ['0.2.6', '2012-07-03', "BF #8, BF #6"],
     ['0.2.5', '2012-07-01', "Added 'get_database' into database CRUD"],

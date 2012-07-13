@@ -106,7 +106,7 @@ module Orientdb4r
     # Creates a new class in the schema.
     def create_class(name, options={})
       raise ArgumentError, "class name is blank" if blank?(name)
-      opt_pattern = { :extends => :optional , :cluster => :optional, :force => false }
+      opt_pattern = { :extends => :optional , :cluster => :optional, :force => false, :properties => :optional }
       verify_options(options, opt_pattern)
 
       sql = "CREATE CLASS #{name}"
@@ -116,6 +116,19 @@ module Orientdb4r
       drop_class name if options[:force]
 
       command sql
+
+      # properties given?
+      if options.include? :properties
+        props = options[:properties]
+        raise ArgumentError, 'properties have to be an array' unless props.is_a? Array
+
+        props.each do |prop|
+          raise ArgumentError, 'property definition has to be a hash' unless prop.is_a? Hash
+          prop_name = prop.delete :property
+          prop_type = prop.delete :type
+          create_property(name, prop_name, prop_type, prop)
+        end
+      end
 
       if block_given?
         proxy = Orientdb4r::Utils::Proxy.new(self, name)

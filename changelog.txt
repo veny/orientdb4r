@@ -3,6 +3,10 @@
 - 'rest-client' replaced by 'excon' for HTTP communication with Keep-Alive
 - introduced support for distributed server
 
-0.3.0 07/07/12
+0.2.8 /07/07/xx
+- changed and stabilized exception handling
+- added feature Client#create_class(:properties)
+
+0.2.7 07/07/12
 - changed design to support distributed server
 - added method Client#class_exists?
