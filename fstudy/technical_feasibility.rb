@@ -35,9 +35,11 @@ class TechnicalFeasibility < FStudy::Case
 
   # Prepares data.
   def data
-    comm = insert_communities
+    communities = insert_communities
     units = insert_org_units
-puts units
+    users = insert_users(100, units, communities)
+    insert_contacts(users, 7) # ~ coeficient 4.0
+    insert_contents(users, communities)
   end
 
   def count
@@ -64,13 +66,13 @@ puts units
         c['@class'] = 'Community'
         c[:rid] = client.create_document(c)
       end
-      puts "Created communities: #{communities.size}"
+      puts "Created Communities: #{communities.size}"
       communities
     end
 
     def insert_org_units
       units = [
-          { :name => 'Big Company', :descendants => [ 'Automotive', 'Research', 'Company Infrastructure' ] },
+          { :name => 'BigCompany', :descendants => [ 'Automotive', 'Research', 'Infrastructure' ] },
           { :name => 'Automotive', :descendants => [ 'Sales', 'Marketing', 'Design' ] },
           { :name => 'Sales' },
           { :name => 'Marketing' },
@@ -78,12 +80,13 @@ puts units
           { :name => 'Research', :descendants => [ 'Scientist', 'Spies' ] },
           { :name => 'Scientist' },
           { :name => 'Spies' },
-          { :name => 'Company Infrastructure', :descendants => [ 'Accounting', 'Human Resources' ] },
+          { :name => 'Infrastructure', :descendants => [ 'Accounting', 'HumanResources' ] },
           { :name => 'Accounting' },
-          { :name => 'Human Resources' , :descendants => [ 'Recruitment' ] },
+          { :name => 'HumanResources' , :descendants => [ 'Recruitment' ] },
           { :name => 'Recruitment' }
       ]
       units.each { |unit| insert_org_unit_helper(unit, units) }
+      puts "Created OrgUnits: #{units.size}"
       units
     end
     def insert_org_unit_helper(unit, all)
@@ -113,24 +116,61 @@ puts units
         unit[:rid] = rid
     end
 
-    def insert_users(units, communities)
-      1.upto(10) do
+    def insert_users(count, units, communities)
+      users = []
+      1.upto(count) do
         firstname = dg.word
         surname = dg.word
         username =  "#{firstname}.#{surname}"
         # random distribution of Units (1) & Communities (0..3)
         unit = units[rand(units.size)]
         comms = []
-        0.upto(rand(4)) { |i| comms << communities[rand(communities.size)] if i > 0 }
+        0.upto(rand(4)) { |i| comms << communities[rand(communities.size)][:rid] if i > 0 }
 
-        c.create_document({ '@class' => 'User', \
-                            :username => username, \
-                            :email => 'xx',\
-                            :firstname => firstname.capitalize, \
-                            :surname => surname.capitalize, \
-                            :unit => unit[:rid], \
-                            :communities => comms })
+        user = { '@class' => 'User', \
+                 :username => username, \
+                 :firstname => firstname.capitalize, \
+                 :surname => surname.capitalize, \
+                 :unit => unit[:rid], \
+                 :communities => comms }
+        rid = client.create_document(user)
+        user[:rid] = rid
+        users << user
       end
+      puts "Created Users: #{users.size}"
+      users
+    end
+
+    def insert_contacts(users, max_contacts)
+      count = 0
+      types = [:friend, :family, :coworker, :enemy]
+      0.upto(users.size - 1) do |i|
+        a = users[i]
+        0.upto(rand(max_contacts)) do
+          b = users[rand(users.size)]
+          client.create_document({'@class' => 'Contact', :a => a[:rid], :b => b[:rid], :type => rand(types.size)})
+          count += 1
+        end
+      end
+      puts "Created Contacts: #{count}"
+    end
+
+    def insert_contents(users, communities, user_coef = 1.0)
+      classes = [['Article', 'body'], ['Gallery', 'description'], ['Term', 'topic']]
+      limit = (users.size * user_coef).to_i
+
+      1.upto(limit) do
+        clazz = classes[rand(classes.size)]
+        content = {'@class' => clazz[0], :title => "#{dg.word} #{dg.word}", clazz[1] => dg.word}
+        # random distribution of Users (1) & Communities (0..3)
+        content[:author] = users[rand(users.size)][:rid]
+        comms = []
+        0.upto(rand(4)) { |i| comms << communities[rand(communities.size)][:rid] if i > 0 }
+        content[:communities] = comms
+
+        client.create_document(content)
+      end
+      puts "Created ContentTypes: #{limit}"
     end
 
     def classes_definition
@@ -138,27 +178,29 @@ puts units
       [
         { :class => 'OrgUnit', :properties => [
           { :property => 'name', :type => :string, :mandatory => true },
-          { :property => 'domain', :type => :string },
           { :property => 'descendants',  :type => :linkset, :linked_class => 'OrgUnit' }]},
         { :class => 'Community', :properties => [
             { :property => 'name', :type => :string, :mandatory => true }]},
         { :class => 'User', :properties => [
-            { :property => 'email', :type => :string, :mandatory => true },
+            { :property => 'username', :type => :string, :mandatory => true },
             { :property => 'firstname', :type => :string, :mandatory => true },
             { :property => 'surname', :type => :string, :mandatory => true },
             { :property => 'unit',  :type => :link, :linked_class => 'OrgUnit', :mandatory => true },
             { :property => 'communities',  :type => :linkset, :linked_class => 'Community' }]},
+        { :class => 'Contact', :properties => [
+            { :property => 'type', :type => :integer, :mandatory => true },
+            { :property => 'a',  :type => :link, :linked_class => 'User', :mandatory => true },
+            { :property => 'b',  :type => :link, :linked_class => 'User', :mandatory => true }]},
         { :class => 'Content', :properties => [
             { :property => 'title', :type => :string, :mandatory => true },
             { :property => 'author',  :type => :link, :linked_class => 'User', :mandatory => true },
-            { :property => 'accessible_in',  :type => :linkset, :linked_class => 'Community' }]},
+            { :property => 'accessible_in', :type => :linkset, :linked_class => 'Community' }]},
         { :class => 'Article', :extends => 'Content', :properties => [
             { :property => 'body', :type => :string, :mandatory => true }]},
         { :class => 'Gallery', :extends => 'Content', :properties => [
             { :property => 'description', :type => :string, :mandatory => true }]},
         { :class => 'Term', :extends => 'Content', :properties => [
-            { :property => 'from', :type => :string, :mandatory => true },
-            { :property => 'to', :type => :string, :mandatory => true }]}
+            { :property => 'topic', :type => :string, :mandatory => true }]}
       ]
     end
 
