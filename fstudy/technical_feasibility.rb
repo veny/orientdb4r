@@ -5,7 +5,7 @@ require 'study_case'
 # https://github.com/veny/orientdb4r/wiki/Technical-Feasibility
 class TechnicalFeasibility < FStudy::Case
 
-#  def db; 'perf'; end
+  def db; 'perf'; end
 
   # Dropes the document model.
   def drop
@@ -37,9 +37,10 @@ class TechnicalFeasibility < FStudy::Case
   def data
     communities = insert_communities
     units = insert_org_units
-    users = insert_users(100, units, communities)
-    insert_contacts(users, 7) # ~ coeficient 4.0
-    insert_contents(users, communities)
+    users = insert_users(10000, units, communities)
+    insert_contacts(users, 7) # max pro user => ~ coeficient 4.0 pro user
+    contents = insert_contents(users, communities, 1.0) # coeficient pro user
+    insert_activities(users, communities, contents, 100) # coeficient pro user
   end
 
   def count
@@ -62,11 +63,13 @@ class TechnicalFeasibility < FStudy::Case
         { :name => 'Scifi reader' },
         { :name => 'Comic reader' }
       ]
+
+      start = Time.now
       communities.each do |c|
         c['@class'] = 'Community'
         c[:rid] = client.create_document(c)
       end
-      puts "Created Communities: #{communities.size}"
+      puts "Created Communities: #{communities.size}, time = #{Time.now - start} [s]"
       communities
     end
 
@@ -85,8 +88,10 @@ class TechnicalFeasibility < FStudy::Case
           { :name => 'HumanResources' , :descendants => [ 'Recruitment' ] },
           { :name => 'Recruitment' }
       ]
+
+      start = Time.now
       units.each { |unit| insert_org_unit_helper(unit, units) }
-      puts "Created OrgUnits: #{units.size}"
+      puts "Created OrgUnits: #{units.size}, time = #{Time.now - start} [s]"
       units
     end
     def insert_org_unit_helper(unit, all)
@@ -117,6 +122,7 @@ class TechnicalFeasibility < FStudy::Case
     end
 
     def insert_users(count, units, communities)
+      start = Time.now
       users = []
       1.upto(count) do
         firstname = dg.word
@@ -137,11 +143,12 @@ class TechnicalFeasibility < FStudy::Case
         user[:rid] = rid
         users << user
       end
-      puts "Created Users: #{users.size}"
+      puts "Created Users: #{users.size}, time = #{Time.now - start} [s]"
       users
     end
 
     def insert_contacts(users, max_contacts)
+      start = Time.now
       count = 0
       types = [:friend, :family, :coworker, :enemy]
       0.upto(users.size - 1) do |i|
@@ -152,10 +159,12 @@ class TechnicalFeasibility < FStudy::Case
           count += 1
         end
       end
-      puts "Created Contacts: #{count}"
+      puts "Created Contacts: #{count}, time = #{Time.now - start} [s]"
     end
 
     def insert_contents(users, communities, user_coef = 1.0)
+      start = Time.now
+      contents = []
       classes = [['Article', 'body'], ['Gallery', 'description'], ['Term', 'topic']]
       limit = (users.size * user_coef).to_i
 
@@ -168,23 +177,49 @@ class TechnicalFeasibility < FStudy::Case
         0.upto(rand(4)) { |i| comms << communities[rand(communities.size)][:rid] if i > 0 }
         content[:communities] = comms
 
-        client.create_document(content)
+        rid = client.create_document(content)
+        content[:rid] = rid
+        contents << content
       end
-      puts "Created ContentTypes: #{limit}"
+      puts "Created ContentTypes: #{contents.size}, time = #{Time.now - start} [s]"
+      contents
+    end
+
+    def insert_activities(users, communities, contents, user_coef)
+      start = Time.now
+      types = [:login, :logout, :likeit, :rated, :saw, :commented]
+      limit = users.size * user_coef
+      1.upto(limit) do |i|
+        puts "... #{i}" if 0 == i % 100000
+        type = rand(types.size)
+        activity = { '@class' => 'Activity', :type => type, :stamp => (Time.now.to_i - rand(3600*23*30)) }
+        # random distribution of Users (1) & the same communities as user
+        user = users[rand(users.size)]
+        activity[:source] = user[:rid]
+        activity[:communities] = user[:communities]
+        # content
+        content = (types[type] == :login or types[type] == :logout) ? nil : contents[rand(contents.size)]
+        activity[content['@class'].downcase] = content[:rid] unless content.nil?
+
+        client.create_document(activity)
+      end
+      puts "Created Activities: #{limit}, time = #{Time.now - start} [s]"
     end
 
     def classes_definition
       # TODO rdbms_id
       [
         { :class => 'OrgUnit', :properties => [
-          { :property => 'name', :type => :string, :mandatory => true },
-          { :property => 'descendants',  :type => :linkset, :linked_class => 'OrgUnit' }]},
+            { :property => 'name', :type => :string, :mandatory => true },
+            # TODO domain
+            { :property => 'descendants',  :type => :linkset, :linked_class => 'OrgUnit' }]},
         { :class => 'Community', :properties => [
             { :property => 'name', :type => :string, :mandatory => true }]},
         { :class => 'User', :properties => [
             { :property => 'username', :type => :string, :mandatory => true },
             { :property => 'firstname', :type => :string, :mandatory => true },
             { :property => 'surname', :type => :string, :mandatory => true },
+            # TODO roles
             { :property => 'unit',  :type => :link, :linked_class => 'OrgUnit', :mandatory => true },
             { :property => 'communities',  :type => :linkset, :linked_class => 'Community' }]},
         { :class => 'Contact', :properties => [
@@ -200,7 +235,12 @@ class TechnicalFeasibility < FStudy::Case
         { :class => 'Gallery', :extends => 'Content', :properties => [
             { :property => 'description', :type => :string, :mandatory => true }]},
         { :class => 'Term', :extends => 'Content', :properties => [
-            { :property => 'topic', :type => :string, :mandatory => true }]}
+            { :property => 'topic', :type => :string, :mandatory => true }]},
+        { :class => 'Activity', :properties => [
+            { :property => 'type', :type => :integer, :mandatory => true },
+            { :property => 'stamp', :type => :integer, :mandatory => true },
+            { :property => 'source',  :type => :link, :linked_class => 'User', :mandatory => true },
+            { :property => 'communities', :type => :linkset, :linked_class => 'Community' }]}
       ]
     end
 
