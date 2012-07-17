@@ -103,7 +103,7 @@ module Orientdb4r
     def create_database(options) #:nodoc:
       options_pattern = {
         :database => :mandatory, :type => 'memory',
-        :user => :optional, :password => :optional, :ssl => false
+        :user => :optional, :password => :optional
       }
       verify_and_sanitize_options(options, options_pattern)
 
@@ -137,6 +137,22 @@ module Orientdb4r
           :uri => "database/#{options[:database]}"
 
       # NotFoundError cannot be raised - no way how to recognize from 401 bad auth
+      process_response(response)
+    end
+
+
+    def delete_database(options) #:nodoc:
+      options_pattern = {
+        :database => :mandatory, :user => :optional, :password => :optional
+      }
+      verify_and_sanitize_options(options, options_pattern)
+
+      u = options.include?(:user) ? options[:user] : user
+      p = options.include?(:password) ? options[:password] : password
+
+      # uses one-off request because of additional authentication to the server
+      response = a_node.oo_request :method => :delete, :user => u, :password => p, \
+          :uri => "database/#{options[:database]}"
       process_response(response)
     end
 

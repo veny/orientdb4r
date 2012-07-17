@@ -84,6 +84,13 @@ module Orientdb4r
     end
 
 
+    ###
+    # Drops a database.
+    # Requires additional authentication to the server.
+    def delete_database(options)
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
     # ---------------------------------------------------------------------- SQL
 
     ###

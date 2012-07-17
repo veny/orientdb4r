@@ -76,14 +76,16 @@ class TestDatabase < Test::Unit::TestCase
 
   ###
   # CREATE DATABASE
-  # Temporary disabled because of unknown way how to drop a new created datatabse.
+  # Temporary disabled because of dependency to password of 'root' account
   def xtest_create_database
-    @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+    assert_nothing_thrown do
+      @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+    end
     assert_nothing_thrown do
       @client.get_database :database => 'UniT', :user => 'admin', :password => 'admin'
     end
     # creating an existing DB
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::ServerError do
       @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     end
     # insufficient rights
@@ -93,8 +95,10 @@ class TestDatabase < Test::Unit::TestCase
 
     # By convention 3 users are always created by default every time you create a new database.
     # Default users are: admin, reader, writer
-    @client.connect :database => 'UniT', :user => 'admin', :password => 'admin'
-    #@client.command "DROP DATABASE UniT" : NOT WORKING now
+    assert_nothing_thrown do
+      @client.connect :database => 'UniT', :user => 'admin', :password => 'admin'
+    end
+    @client.delete_database({:database => 'UniT', :user => 'root', :password => 'root'})
   end
 
 
@@ -123,6 +127,27 @@ class TestDatabase < Test::Unit::TestCase
     assert @client.database_exists?(:database => 'temp') # use credentials of logged in user
     assert !@client.database_exists?(:database => 'UnknownDB')
     assert !@client.database_exists?(:database => 'temp/admin')
+  end
+
+
+  ###
+  # DELETE DATABASE
+  # Temporary disabled because of dependency to password of 'root' account
+  def xtest_delete_database
+    @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+
+    # deleting non-existing DB
+    assert_raise Orientdb4r::ServerError do
+      @client.delete_database :database => 'UniT1', :user => 'root', :password => 'root'
+    end
+    # insufficient rights
+    assert_raise Orientdb4r::OrientdbError do
+      @client.delete_database :database => 'UniT', :user => 'admin', :password => 'admin'
+    end
+
+    assert_nothing_thrown do
+      @client.delete_database({:database => 'UniT', :user => 'root', :password => 'root'})
+    end
   end
 
 

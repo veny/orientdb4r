@@ -190,7 +190,7 @@ class TechnicalFeasibility < FStudy::Case
       types = [:login, :logout, :likeit, :rated, :saw, :commented]
       limit = users.size * user_coef
       1.upto(limit) do |i|
-        puts "... #{i}" if 0 == i % 100000
+        puts "... #{i} #{Time.now - start}" if 0 == i % 100000
         type = rand(types.size)
         activity = { '@class' => 'Activity', :type => type, :stamp => (Time.now.to_i - rand(3600*23*30)) }
         # random distribution of Users (1) & the same communities as user
@@ -201,7 +201,12 @@ class TechnicalFeasibility < FStudy::Case
         content = (types[type] == :login or types[type] == :logout) ? nil : contents[rand(contents.size)]
         activity[content['@class'].downcase] = content[:rid] unless content.nil?
 
-        client.create_document(activity)
+        begin
+          client.create_document(activity)
+        rescue Exception => e
+          Orientdb4r::logger.error "problem storing index=#{i}, user=#{user.inspect}"
+          Orientdb4r::logger.error e
+        end
       end
       puts "Created Activities: #{limit}, time = #{Time.now - start} [s]"
     end
