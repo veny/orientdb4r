@@ -3,7 +3,7 @@ require 'study_case'
 # This class tests performance on a simple flat class.
 class FlatClassPerf < FStudy::Case
 
-#  def db; 'perf'; end
+  def db; 'perf'; end
 
   def drop
     client.drop_class 'User'
@@ -35,8 +35,18 @@ class FlatClassPerf < FStudy::Case
     end
   end
 
-  def count
-    puts client.query 'SELECT count(*) FROM User'
+  def product
+    1.upto(500000) do |i|
+      Orientdb4r::logger.info "...done: #{i}" if 0 == (i % 100000)
+      name = dg.word
+      type = (rand(3) == 0) ? 'a' : 'b'
+      begin
+        client.command "insert into product cluster #{type} (name,type) values ('#{name}','#{type}')"
+#        client.command "insert into product_simple (name,type) values ('#{name}','#{type}')"
+      rescue Exception => e
+        Orientdb4r::logger.error e
+      end
+    end
   end
 
 end

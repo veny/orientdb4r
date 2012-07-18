@@ -126,7 +126,8 @@ module Orientdb4r
     ###
     # Gets the document ID.
     def doc_rid
-      self['@rid']
+      @mixedin_rid = Rid.new(self['@rid']) if @mixedin_rid.nil?
+      @mixedin_rid
     end
 
     ###

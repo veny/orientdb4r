@@ -32,7 +32,7 @@ class TestDocumentCrud < Test::Unit::TestCase
   def test_create_document
     assert_nothing_thrown do @client.create_document( { '@class' => CLASS, 'prop1' => 99, 'prop2' => 'ipsum lorem' }); end
     rid = @client.create_document({ '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
-    assert rid =~ /#[0-9]+:[0-9]+$/
+    assert_instance_of Orientdb4r::Rid, rid
 
     # no effect if a define the version
     assert_nothing_thrown do
@@ -86,10 +86,10 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert doc.kind_of? Orientdb4r::DocumentMetadata
 
     # not existing RID
-    rid1 = rid.sub(/[0-9]+$/, (rid.split(':')[1].to_i + 1).to_s) # '#6:0' > '#6:1' or '#6:11' > '#6:12'
+    rid1 = Orientdb4r::Rid.new("#{rid.cluster_id}:#{rid.document_id + 1}") # '#6:0' > '#6:1' or '#6:11' > '#6:12'
     assert_raise Orientdb4r::NotFoundError do @client.get_document rid1; end
     # bad RID format
-    assert_raise Orientdb4r::ServerError do @client.get_document('xx'); end
+    assert_raise ArgumentError do @client.get_document('xx'); end
   end
 
   ###
@@ -146,7 +146,7 @@ class TestDocumentCrud < Test::Unit::TestCase
     # not existing RID
     assert_raise Orientdb4r::NotFoundError do @client.delete_document '#4:1111'; end
     # bad RID format
-    assert_raise Orientdb4r::ServerError do @client.delete_document 'xx'; end
+    assert_raise ArgumentError do @client.delete_document 'xx'; end
   end
 
 end

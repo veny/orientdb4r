@@ -228,24 +228,20 @@ module Orientdb4r
 
     # ----------------------------------------------------------------- DOCUMENT
 
-    def create_document(doc)
+    def create_document(doc) #:nodoc:
       response = a_node.request(:method => :post, :uri => "document/#{@database}", \
           :content_type => 'application/json', :data => doc.to_json)
-      rid = process_response(response)  do
+      srid = process_response(response)  do
         raise DataError, 'validation problem' if response.body =~ /OValidationException/
       end
 
-      raise ArgumentError, "invalid RID format, RID=#{rid}" unless rid =~ /^#[0-9]+:[0-9]+/
-      rid
+      Rid.new srid
     end
 
 
     def get_document(rid) #:nodoc:
-      raise ArgumentError, 'blank RID' if blank? rid
-      # remove the '#' prefix
-      rid = rid[1..-1] if rid.start_with? '#'
-
-      response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid}")
+      rid = Rid.new(rid) unless rid.is_a? Rid
+      response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid.unprefixed}")
       rslt = process_response(response) do
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
         raise NotFoundError, 'record not found' if response.body =~ /Record with id .* was not found/ # why after delete?
@@ -261,10 +257,10 @@ module Orientdb4r
       raise ArgumentError, 'document has no RID' if doc.doc_rid.nil?
       raise ArgumentError, 'document has no version' if doc.doc_version.nil?
 
-      rid = doc.delete '@rid'
-      rid = rid[1..-1] if rid.start_with? '#'
+      rid = doc.doc_rid
+      doc.delete '@rid' # will be not updated
 
-      response = a_node.request(:method => :put, :uri => "document/#{@database}/#{rid}", \
+      response = a_node.request(:method => :put, :uri => "document/#{@database}/#{rid.unprefixed}", \
           :content_type => 'application/json', :data => doc.to_json)
       process_response(response) do
         raise DataError, 'concurrent modification' if response.body =~ /OConcurrentModificationException/
@@ -275,11 +271,9 @@ module Orientdb4r
 
 
     def delete_document(rid) #:nodoc:
-      raise ArgumentError, 'blank RID' if blank? rid
-      # remove the '#' prefix
-      rid = rid[1..-1] if rid.start_with? '#'
+      rid = Rid.new(rid) unless rid.is_a? Rid
 
-      response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid}")
+      response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid.unprefixed}")
       process_response(response) do
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
