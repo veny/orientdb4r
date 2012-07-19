@@ -23,15 +23,19 @@ module Orientdb4r
       self.document_id = ids[1].to_i
     end
 
+    ###
+    # Setter fo cluster ID.
     def cluster_id=(cid)
       @cluster_id = cid.to_i
     end
 
+    ###
+    # Setter fo document ID.
     def document_id=(did)
       @document_id = did.to_i
     end
 
-    def to_s
+    def to_s #:nodoc:
       "##{cluster_id}:#{document_id}"
     end
 
