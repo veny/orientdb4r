@@ -9,17 +9,35 @@ module Orientdb4r
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :user, :password, :database
+    attr_reader :user, :password, :database, :http_lib
 
 
     def initialize(options) #:nodoc:
       super()
-      options_pattern = { :host => 'localhost', :port => 2480, :ssl => false }
+      options_pattern = { :host => 'localhost', :port => 2480, :ssl => false,
+                          :nodes => :optional,
+                          :connection_library => :restclient}
       verify_and_sanitize_options(options, options_pattern)
 
-      raise ArgumentError, 'no node type defined in context' unless Orientdb4r::context.include? :node_type
-      @nodes << Orientdb4r::context[:node_type].new(options[:host], options[:port], options[:ssl])
-      Orientdb4r::logger.debug "client with communication driver: #{a_node.identification}"
+      # fake nodes for single server
+      unless options[:nodes].nil?
+        options[:nodes] = [{:host => options[:host], :port => options[:port], :ssl => options[:ssl]}]
+      end
+      raise ArgumentError, 'nodes has to be arrray' unless options[:nodes].is_a? Array
+
+      node_clazz = case options[:connection_library]
+        when :restclient then Orientdb4r::RestClientNode
+        when :excon then Orientdb4r::ExconNode
+        else raise ArgumentError, "unknown connection library: #{options[:connection_library]}"
+      end
+      @http_lib = options[:connection_library]
+
+      options[:nodes].each do |node_options|
+        @nodes << node_clazz.new(options[:host], options[:port], options[:ssl])
+        verify_and_sanitize_options(node_options, options_pattern)
+      end
+
+      Orientdb4r::logger.info "client initialized, #{@nodes.size} node(s) with connection library = #{options[:connection_library]}"
     end
 
 
@@ -303,8 +321,8 @@ module Orientdb4r
           raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{compose_error_message(response)}"
         end
 
-        content_type = response.headers[:content_type] if Orientdb4r::context[:node_type] == RestClientNode
-        content_type = response.headers['Content-Type'] if Orientdb4r::context[:node_type] == ExconNode
+        content_type = response.headers[:content_type] if http_lib == :restclient
+        content_type = response.headers['Content-Type'] if http_lib == :excon
         content_type ||= 'text/plain'
 
         rslt = case

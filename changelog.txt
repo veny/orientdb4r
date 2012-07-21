@@ -3,6 +3,8 @@
 - 'rest-client' replaced by 'excon' for HTTP communication with Keep-Alive
 - introduced support for distributed server
 
+0.2.10 /07/07/21
+- experimental support for Excon HTTP library with Keep-Alive connection
 
 0.2.9 /07/07/18
 - introduced class Rid

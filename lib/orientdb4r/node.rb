@@ -19,12 +19,6 @@ module Orientdb4r
 
 
     ###
-    # Identifies technology backgound of this node implementation.
-    def identification
-      raise NotImplementedError, 'this should be overridden by subclass'
-    end
-
-    ###
     # Cleans up resources used by the node.
     def cleanup
       raise NotImplementedError, 'this should be overridden by subclass'

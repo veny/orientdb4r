@@ -7,12 +7,6 @@ module Orientdb4r
   # accessible view REST API and 'excon' library on the client side.
   class ExconNode < RestNode
 
-
-    def identification #:nodoc:
-      'excon'
-    end
-
-
     def oo_request(options) #:nodoc:
       address = "#{url}/#{options[:uri]}"
       headers = {}

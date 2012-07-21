@@ -7,12 +7,6 @@ module Orientdb4r
   # accessible view REST API and 'rest-client' library on the client side.
   class RestClientNode < RestNode
 
-
-    def identification #:nodoc:
-      'rest-client'
-    end
-
-
     def oo_request(options) #:nodoc:
       begin
         options[:url] = "#{url}/#{options[:uri]}"

@@ -44,7 +44,7 @@ module Orientdb4r
       RestClient.proxy = url
     end
 
-    attr_accessor :logger, :context
+    attr_accessor :logger
 
   end
 
@@ -85,12 +85,6 @@ Orientdb4r::logger.level = Logger::INFO
 
 Orientdb4r::logger.info \
     "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"
-
-
-# Configuration of context.
-Orientdb4r::context = {}
-Orientdb4r::context[:node_type] = Orientdb4r::RestClientNode
-#Orientdb4r::context[:node_type] = Orientdb4r::ExconNode
 
 
 #Orientdb4r::logger.level = Logger::DEBUG
