@@ -15,7 +15,7 @@ module Orientdb4r
     def initialize(options) #:nodoc:
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false,
-                          :nodes => :optional, :load_balancing => :sequence
+                          :nodes => :optional, :load_balancing => :sequence,
                           :connection_library => :restclient}
       verify_and_sanitize_options(options, options_pattern)
 
@@ -35,7 +35,7 @@ module Orientdb4r
 
       # type of load balancing
       @load_balancing = options[:load_balancing]
-      unless [:sequence:, :round_robin].include? load_balancing
+      unless [:sequence, :round_robin].include? load_balancing
         raise ArgumentError, "unknow load balancing type: #{load_balancing}"
       end
 
