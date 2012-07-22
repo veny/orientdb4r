@@ -9,13 +9,13 @@ module Orientdb4r
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :user, :password, :database, :http_lib
+    attr_reader :user, :password, :database, :load_balancing, :http_lib
 
 
     def initialize(options) #:nodoc:
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false,
-                          :nodes => :optional,
+                          :nodes => :optional, :load_balancing => :sequence
                           :connection_library => :restclient}
       verify_and_sanitize_options(options, options_pattern)
 
@@ -25,12 +25,19 @@ module Orientdb4r
       end
       raise ArgumentError, 'nodes has to be arrray' unless options[:nodes].is_a? Array
 
+      # instantiate nodes accroding to HTTP library
       node_clazz = case options[:connection_library]
         when :restclient then Orientdb4r::RestClientNode
         when :excon then Orientdb4r::ExconNode
         else raise ArgumentError, "unknown connection library: #{options[:connection_library]}"
       end
       @http_lib = options[:connection_library]
+
+      # type of load balancing
+      @load_balancing = options[:load_balancing]
+      unless [:sequence:, :round_robin].include? load_balancing
+        raise ArgumentError, "unknow load balancing type: #{load_balancing}"
+      end
 
       options[:nodes].each do |node_options|
         @nodes << node_clazz.new(options[:host], options[:port], options[:ssl])
