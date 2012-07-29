@@ -36,7 +36,7 @@ module Orientdb4r
 
     ###
     # Sends an one-off request to the remote server.
-    def oo_request(options)
+    def one_off_request(options)
       raise NotImplementedError, 'this should be overridden by subclass'
     end
 

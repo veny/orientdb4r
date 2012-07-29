@@ -25,6 +25,14 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 2, options.size
     assert_equal 'X', options[:a]
     assert_equal 'B', options[:b]
+
+    # :optional cannot be set as default value
+    opt_pattern = {:a => :optional, :b => 'B'}
+    options = {}
+    verify_and_sanitize_options(options, opt_pattern)
+    assert_equal 1, options.size
+    assert !options.include?(:a)
+    assert_equal 'B', options[:b]
   end
 
   def test_compare_versions

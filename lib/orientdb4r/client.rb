@@ -9,7 +9,8 @@ module Orientdb4r
     # # Regexp to validate format of providet version.
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
 
-    attr_reader :server_version
+    attr_reader :server_version, :nodes, :connection_library
+    attr_reader :load_balancing, :lb_strategy
 
     ###
     # Constructor.
@@ -181,7 +182,7 @@ module Orientdb4r
       opt_pattern = { :mode => :nil }
       verify_options(options, opt_pattern)
       if :strict == options[:mode]
-        response = a_node.request(:method => :get, :uri => "connect/#{@database}") # TODO there cannot be REST
+        response = call_server(:method => :get, :uri => "connect/#{@database}") # TODO there cannot be REST
         connect_info = process_response response
         children = connect_info['classes'].select { |i| i['superClass'] == name }
         unless children.empty?
@@ -256,8 +257,56 @@ module Orientdb4r
 
     protected
 
-      def a_node
-        @nodes[0]
+      ###
+      # Calls the server with a specific task.
+      # Returns a response according to communication channel.
+      def call_server(options)
+        idx = lb_strategy.node_index
+        node = @nodes[idx]
+        begin
+          response = node.request options
+          lb_strategy.good_one idx
+        rescue NodeError
+          Orientdb4r::logger.warn "node error, index=#{idx}"
+          lb_strategy.bad_index idx
+        end
+        response
+      end
+
+
+      ###
+      # Calls the server with a specific task.
+      # No already existing client/server stuff
+      # (e.g. session, keep-alive connection, ...) will be used for this call.
+      # Returns a response according to communication channel.
+      def call_server_one_off(options)
+        response = nil
+        idx = lb_strategy.node_index
+
+        begin
+          node = @nodes[idx]
+          begin
+            response = node.one_off_request options
+            lb_strategy.good_one idx
+            return response
+          rescue NodeError => e
+            Orientdb4r::logger.error "node error, index=#{idx}, msg=#{e.message}, #{node}"
+            lb_strategy.bad_one idx
+            idx = lb_strategy.node_index
+          end
+        end until idx.nil? and response.nil? # both 'nil' <= we tries all node and all with problem
+
+        raise OrientdbError, 'all nodes failed to communicate with server!'
+      end
+
+
+      ###
+      # Gets a node according to load balancing strategy.
+      #
+      # !! do NOT use it !!
+      # !! only for purposes of unit testing !!
+      def balanced_node
+        @nodes[lb_strategy.node_index]
       end
 
 
@@ -266,6 +315,7 @@ module Orientdb4r
       def assert_connected
         raise ConnectionError, 'not connected' unless @connected
       end
+
 
       ###
       # Around advice to meassure and print the method time.

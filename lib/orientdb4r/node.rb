@@ -31,6 +31,11 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by subclass'
     end
 
+
+    def to_s  #:nodoc:
+      "Node(host=#{host},port=#{port})"
+    end
+
   end
 
 end

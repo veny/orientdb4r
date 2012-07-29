@@ -7,7 +7,7 @@ module Orientdb4r
   # accessible view REST API and 'excon' library on the client side.
   class ExconNode < RestNode
 
-    def oo_request(options) #:nodoc:
+    def one_off_request(options) #:nodoc:
       address = "#{url}/#{options[:uri]}"
       headers = {}
       headers['Authorization'] = basic_auth_header(options[:user], options[:password]) if options.include?(:user)

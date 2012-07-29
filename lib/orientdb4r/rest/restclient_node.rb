@@ -4,14 +4,20 @@ module Orientdb4r
 
   ###
   # This class represents a single sever/node in the Distributed Multi-Master Architecture
-  # accessible view REST API and 'rest-client' library on the client side.
+  # accessible via REST API and 'rest-client' library on the client side.
   class RestClientNode < RestNode
 
-    def oo_request(options) #:nodoc:
+    def one_off_request(options) #:nodoc:
+      opts = options.clone # if not cloned we change original hash map that cannot be used more with load balancing
+
       begin
-        options[:url] = "#{url}/#{options[:uri]}"
-        options.delete :uri
-        response = ::RestClient::Request.new(options).execute
+        opts[:url] = "#{url}/#{opts[:uri]}"
+        opts.delete :uri
+        response = ::RestClient::Request.new(opts).execute
+      rescue Errno::ECONNREFUSED
+        raise NodeError
+      rescue ::RestClient::ServerBrokeConnection
+        raise NodeError
       rescue ::RestClient::Exception => e
         response = transform_error2_response(e)
       end
@@ -23,16 +29,19 @@ module Orientdb4r
     def request(options) #:nodoc:
       raise OrientdbError, 'long life connection not initialized' if @resource.nil?
 
-      data = options[:data]
-      options.delete :data
-      data = '' if data.nil? and :post == options[:method] # POST has to have data
+      opts = options.clone # if not cloned we change original hash map that cannot be used more with load balancing
+      data = opts[:data]
+      opts.delete :data
+      data = '' if data.nil? and :post == opts[:method] # POST has to have data
       begin
         # e.g. @resource['disconnect'].get
         if data.nil?
-          response = @resource[options[:uri]].send options[:method].to_sym
+          response = @resource[opts[:uri]].send opts[:method].to_sym
         else
-          response = @resource[options[:uri]].send options[:method].to_sym, data
+          response = @resource[opts[:uri]].send opts[:method].to_sym, data
         end
+      rescue ::RestClient::ServerBrokeConnection
+        raise NodeError
       rescue ::RestClient::Exception => e
         response = transform_error2_response(e)
       end

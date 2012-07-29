@@ -28,7 +28,7 @@ module Orientdb4r
 
       # set default values if missing in options
       pattern.each do |k,v|
-        options[k] = v if !v.nil? and !options.keys.include? k
+        options[k] = v if !v.nil? and :optional != v and !options.keys.include? k
       end
       options
     end

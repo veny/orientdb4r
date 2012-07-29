@@ -19,6 +19,8 @@ module Orientdb4r
   autoload :RestNode,       'orientdb4r/rest/node'
   autoload :RestClientNode, 'orientdb4r/rest/restclient_node'
   autoload :ExconNode,      'orientdb4r/rest/excon_node'
+  autoload :Sequence,       'orientdb4r/load_balancing'
+  autoload :RoundRobin,     'orientdb4r/load_balancing'
 
 
   class << self
@@ -75,6 +77,13 @@ module Orientdb4r
   # Error indicating that manipulation against the given data resulted in some illegal operation,
   # mismatched types or incorrect cardinality.
   class DataError < OrientdbError; end
+
+  # ---------------------------------------------------------- System Exceptions
+
+  ###
+  # This exception represents a fatal failure which meens that the node is not accessible more.
+  # e.g. connection broken pipe
+  class NodeError < OrientdbError; end
 
 end
 

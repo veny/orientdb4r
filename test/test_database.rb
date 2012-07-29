@@ -6,6 +6,9 @@ require 'orientdb4r'
 # * CONNECT
 # * DISCONNECT
 # * CREATE DATABASE
+# * GET DATABASE
+# * DELETE DATABASE
+# * SERVER info
 class TestDatabase < Test::Unit::TestCase
 
   Orientdb4r::logger.level = Logger::DEBUG

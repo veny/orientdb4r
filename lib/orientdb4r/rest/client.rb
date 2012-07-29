@@ -9,7 +9,7 @@ module Orientdb4r
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :user, :password, :database, :load_balancing, :http_lib
+    attr_reader :user, :password, :database
 
 
     def initialize(options) #:nodoc:
@@ -20,31 +20,36 @@ module Orientdb4r
       verify_and_sanitize_options(options, options_pattern)
 
       # fake nodes for single server
-      unless options[:nodes].nil?
+      if options[:nodes].nil?
         options[:nodes] = [{:host => options[:host], :port => options[:port], :ssl => options[:ssl]}]
       end
       raise ArgumentError, 'nodes has to be arrray' unless options[:nodes].is_a? Array
 
       # instantiate nodes accroding to HTTP library
-      node_clazz = case options[:connection_library]
+      @connection_library = options[:connection_library]
+      node_clazz = case connection_library
         when :restclient then Orientdb4r::RestClientNode
         when :excon then Orientdb4r::ExconNode
-        else raise ArgumentError, "unknown connection library: #{options[:connection_library]}"
-      end
-      @http_lib = options[:connection_library]
-
-      # type of load balancing
-      @load_balancing = options[:load_balancing]
-      unless [:sequence, :round_robin].include? load_balancing
-        raise ArgumentError, "unknow load balancing type: #{load_balancing}"
+        else raise ArgumentError, "unknown connection library: #{connection_library}"
       end
 
+      # nodes
       options[:nodes].each do |node_options|
-        @nodes << node_clazz.new(options[:host], options[:port], options[:ssl])
         verify_and_sanitize_options(node_options, options_pattern)
+        @nodes << node_clazz.new(node_options[:host], node_options[:port], node_options[:ssl])
       end
 
-      Orientdb4r::logger.info "client initialized, #{@nodes.size} node(s) with connection library = #{options[:connection_library]}"
+      # load balancing
+      @load_balancing = options[:load_balancing]
+      @lb_strategy = case load_balancing
+        when :sequence then Orientdb4r::Sequence.new nodes.size
+        when :round_robin then Orientdb4r::RoundRobin.new nodes.size
+        else raise ArgumentError, "unknow load balancing type: #{load_balancing}"
+      end
+
+
+      Orientdb4r::logger.info "client initialized with #{@nodes.size} node(s) "
+      Orientdb4r::logger.info "connection_library=#{options[:connection_library]}, load_balancing=#{load_balancing}"
     end
 
 
@@ -57,9 +62,9 @@ module Orientdb4r
       @user = options[:user]
       @password = options[:password]
 
-      node = a_node
+      node = balanced_node
       begin
-        response = node.oo_request(:method => :get, :uri => "connect/#{@database}", :user => user, :password => password)
+        response = call_server_one_off(:method => :get, :uri => "connect/#{@database}", :user => user, :password => password)
       rescue
         @connected = false
         @server_version = nil
@@ -94,7 +99,7 @@ module Orientdb4r
       return unless @connected
 
       begin
-        a_node.request(:method => :get, :uri => 'disconnect')
+        call_server(:method => :get, :uri => 'disconnect')
         # https://groups.google.com/forum/?fromgroups#!topic/orient-database/5MAMCvFavTc
         # Disconnect doesn't require you're authenticated.
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
@@ -118,7 +123,7 @@ module Orientdb4r
       p = options.include?(:password) ? options[:password] : password
 
       # uses one-off request because of additional authentication to the server
-      response = a_node.oo_request :method => :get, :user => u, :password => p, :uri => 'server'
+      response = call_server_one_off :method => :get, :user => u, :password => p, :uri => 'server'
       process_response(response)
     end
 
@@ -136,7 +141,7 @@ module Orientdb4r
       p = options.include?(:password) ? options[:password] : password
 
       # uses one-off request because of additional authentication to the server
-      response = a_node.oo_request :method => :post, :user => u, :password => p, \
+      response = call_server_one_off :method => :post, :user => u, :password => p, \
           :uri => "database/#{options[:database]}/#{options[:type]}"
       process_response(response)
     end
@@ -158,7 +163,7 @@ module Orientdb4r
       p = options.include?(:password) ? options[:password] : password
 
       # uses one-off request because of additional authentication to the server
-      response = a_node.oo_request :method => :get, :user => u, :password => p, \
+      response = call_server_one_off :method => :get, :user => u, :password => p, \
           :uri => "database/#{options[:database]}"
 
       # NotFoundError cannot be raised - no way how to recognize from 401 bad auth
@@ -176,7 +181,7 @@ module Orientdb4r
       p = options.include?(:password) ? options[:password] : password
 
       # uses one-off request because of additional authentication to the server
-      response = a_node.oo_request :method => :delete, :user => u, :password => p, \
+      response = call_server_one_off :method => :delete, :user => u, :password => p, \
           :uri => "database/#{options[:database]}"
       process_response(response)
     end
@@ -193,7 +198,7 @@ module Orientdb4r
       limit = ''
       limit = "/#{options[:limit]}" if !options.nil? and options.include?(:limit)
 
-      response = a_node.request(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
+      response = call_server(:method => :get, :uri => "query/#{@database}/sql/#{CGI::escape(sql)}#{limit}")
       entries = process_response(response) do
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
@@ -207,7 +212,7 @@ module Orientdb4r
 
     def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
-      response = a_node.request(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
+      response = call_server(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
       process_response(response)
     end
 
@@ -218,7 +223,7 @@ module Orientdb4r
       raise ArgumentError, "class name is blank" if blank?(name)
 
       if compare_versions(server_version, '1.1.0') >= 0
-        response = a_node.request(:method => :get, :uri => "class/#{@database}/#{name}")
+        response = call_server(:method => :get, :uri => "class/#{@database}/#{name}")
         rslt = process_response(response) do
           raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
         end
@@ -227,7 +232,7 @@ module Orientdb4r
       else
         # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
         # workaround - use metadate delivered by 'connect'
-        response = a_node.request(:method => :get, :uri => "connect/#{@database}")
+        response = call_server(:method => :get, :uri => "connect/#{@database}")
         connect_info = process_response(response) do
           raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
         end
@@ -254,7 +259,7 @@ module Orientdb4r
     # ----------------------------------------------------------------- DOCUMENT
 
     def create_document(doc) #:nodoc:
-      response = a_node.request(:method => :post, :uri => "document/#{@database}", \
+      response = call_server(:method => :post, :uri => "document/#{@database}", \
           :content_type => 'application/json', :data => doc.to_json)
       srid = process_response(response)  do
         raise DataError, 'validation problem' if response.body =~ /OValidationException/
@@ -266,7 +271,7 @@ module Orientdb4r
 
     def get_document(rid) #:nodoc:
       rid = Rid.new(rid) unless rid.is_a? Rid
-      response = a_node.request(:method => :get, :uri => "document/#{@database}/#{rid.unprefixed}")
+      response = call_server(:method => :get, :uri => "document/#{@database}/#{rid.unprefixed}")
       rslt = process_response(response) do
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
         raise NotFoundError, 'record not found' if response.body =~ /Record with id .* was not found/ # why after delete?
@@ -285,7 +290,7 @@ module Orientdb4r
       rid = doc.doc_rid
       doc.delete '@rid' # will be not updated
 
-      response = a_node.request(:method => :put, :uri => "document/#{@database}/#{rid.unprefixed}", \
+      response = call_server(:method => :put, :uri => "document/#{@database}/#{rid.unprefixed}", \
           :content_type => 'application/json', :data => doc.to_json)
       process_response(response) do
         raise DataError, 'concurrent modification' if response.body =~ /OConcurrentModificationException/
@@ -298,12 +303,13 @@ module Orientdb4r
     def delete_document(rid) #:nodoc:
       rid = Rid.new(rid) unless rid.is_a? Rid
 
-      response = a_node.request(:method => :delete, :uri => "document/#{@database}/#{rid.unprefixed}")
+      response = call_server(:method => :delete, :uri => "document/#{@database}/#{rid.unprefixed}")
       process_response(response) do
         raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
       end
       # empty http response
     end
+
 
     # ------------------------------------------------------------------ Helpers
 
@@ -328,8 +334,8 @@ module Orientdb4r
           raise OrientdbError, "unexpected return code, code=#{response.code}, body=#{compose_error_message(response)}"
         end
 
-        content_type = response.headers[:content_type] if http_lib == :restclient
-        content_type = response.headers['Content-Type'] if http_lib == :excon
+        content_type = response.headers[:content_type] if connection_library == :restclient
+        content_type = response.headers['Content-Type'] if connection_library == :excon
         content_type ||= 'text/plain'
 
         rslt = case
@@ -338,6 +344,7 @@ module Orientdb4r
           when content_type.start_with?('application/json')
             ::JSON.parse(response.body)
           else
+puts "============== #{response}"
             raise OrientdbError, "unsuported content type: #{content_type}"
           end
 
