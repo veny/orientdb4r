@@ -8,7 +8,7 @@ module Orientdb4r
     # Name of cookie that represents a session.
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
-    attr_reader :ssl, :session_id
+    attr_reader :ssl
 
     ###
     # Constructor.
@@ -26,34 +26,14 @@ module Orientdb4r
 
     # ----------------------------------------------------------- RestNode Stuff
 
-    ###
-    # Initializes a long life connection with credentials and session ID
-    # after successful connect.
-    def post_connect(user, password, http_response)
-      raise NotImplementedError, 'this should be overridden by subclass'
-    end
-
 
     ###
-    # Sends an one-off request to the remote server.
-    def one_off_request(options)
-      raise NotImplementedError, 'this should be overridden by subclass'
-    end
-
-
-    ###
-    # Sends a request to the remote server
-    # based on a connection object which is reusable across multiple requests.
+    # Sends a HTTP request to the remote server.
+    # Use following if possible:
+    # * session_id
+    # * Keep-Alive (if possible)
     def request(options)
       raise NotImplementedError, 'this should be overridden by subclass'
-    end
-
-
-    ###
-    # Gets value of the Basic Auth header.
-    def basic_auth_header(user, password)
-      b64 = Base64.encode64("#{user}:#{password}").delete("\r\n")
-      "Basic #{b64}"
     end
 
   end

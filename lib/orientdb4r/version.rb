@@ -2,6 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
+    ['0.3.0',   '2012-07-31', "Added support for cluster of distributed servers"],
     ['0.2.10',  '2012-07-21', "Experimental support for Excon HTTP library with Keep-Alive connection"],
     ['0.2.9',   '2012-07-18', "Added feature Client#delete_database, New class Rid"],
     ['0.2.8',   '2012-07-16', "New exception handling, added feature Client#create_class(:properties)"],

@@ -9,8 +9,6 @@ module Orientdb4r
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
-    attr_reader :user, :password, :database
-
 
     def initialize(options) #:nodoc:
       super()
@@ -62,9 +60,9 @@ module Orientdb4r
       @user = options[:user]
       @password = options[:password]
 
-      node = balanced_node
+      node = nodes[lb_strategy.node_index]
       begin
-        response = call_server_one_off(:method => :get, :uri => "connect/#{@database}", :user => user, :password => password)
+        response = call_server(:method => :get, :uri => "connect/#{@database}")
       rescue
         @connected = false
         @server_version = nil
@@ -75,7 +73,6 @@ module Orientdb4r
         raise ConnectionError
       end
       rslt = process_response response
-      node.post_connect(user, password, response)
       decorate_classes_with_model(rslt['classes'])
 
       # try to read server version
@@ -89,7 +86,7 @@ module Orientdb4r
         @server_version = DEFAULT_SERVER_VERSION
       end
 
-      Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}, session=#{node.session_id}"
+      Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}"
       @connected = true
       rslt
     end
@@ -119,11 +116,8 @@ module Orientdb4r
       options_pattern = { :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
-      u = options.include?(:user) ? options[:user] : user
-      p = options.include?(:password) ? options[:password] : password
-
-      # uses one-off request because of additional authentication to the server
-      response = call_server_one_off :method => :get, :user => u, :password => p, :uri => 'server'
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      response = call_server :method => :get, :uri => 'server'
       process_response(response)
     end
 
@@ -137,34 +131,31 @@ module Orientdb4r
       }
       verify_and_sanitize_options(options, options_pattern)
 
-      u = options.include?(:user) ? options[:user] : user
-      p = options.include?(:password) ? options[:password] : password
-
-      # uses one-off request because of additional authentication to the server
-      response = call_server_one_off :method => :post, :user => u, :password => p, \
-          :uri => "database/#{options[:database]}/#{options[:type]}"
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      response = call_server_one_off :method => :post, :uri => "database/#{options[:database]}/#{options[:type]}"
       process_response(response)
     end
 
 
+    #> curl --user admin:admin http://localhost:2480/database/temp
     def get_database(options=nil) #:nodoc:
       raise ArgumentError, 'options have to be a Hash' if !options.nil? and !options.kind_of? Hash
 
       if options.nil?
-        # use values from connect
+        # use database from connect
         raise ConnectionError, 'client has to be connected if no params' unless connected?
-        options = { :database => database, :user => user, :password => password }
+        options = { :database => database }
       end
 
       options_pattern = { :database => :mandatory, :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
-      u = options.include?(:user) ? options[:user] : user
-      p = options.include?(:password) ? options[:password] : password
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      params = {:method => :get, :uri => "database/#{options[:database]}"}
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
 
-      # uses one-off request because of additional authentication to the server
-      response = call_server_one_off :method => :get, :user => u, :password => p, \
-          :uri => "database/#{options[:database]}"
+      response = call_server params
 
       # NotFoundError cannot be raised - no way how to recognize from 401 bad auth
       process_response(response)
@@ -177,12 +168,8 @@ module Orientdb4r
       }
       verify_and_sanitize_options(options, options_pattern)
 
-      u = options.include?(:user) ? options[:user] : user
-      p = options.include?(:password) ? options[:password] : password
-
-      # uses one-off request because of additional authentication to the server
-      response = call_server_one_off :method => :delete, :user => u, :password => p, \
-          :uri => "database/#{options[:database]}"
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      response = call_server_one_off :method => :delete, :uri => "database/#{options[:database]}"
       process_response(response)
     end
 

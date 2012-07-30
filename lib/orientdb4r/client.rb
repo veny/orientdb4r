@@ -9,7 +9,9 @@ module Orientdb4r
     # # Regexp to validate format of providet version.
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
 
-    attr_reader :server_version, :nodes, :connection_library
+    attr_reader :user, :password, :database
+    attr_reader :server_version
+    attr_reader :nodes, :connection_library
     attr_reader :load_balancing, :lb_strategy
 
     ###
@@ -259,34 +261,22 @@ module Orientdb4r
 
       ###
       # Calls the server with a specific task.
-      # Returns a response according to communication channel.
+      # Returns a response according to communication channel (e.g. HTTP response).
       def call_server(options)
-        idx = lb_strategy.node_index
-        node = @nodes[idx]
-        begin
-          response = node.request options
-          lb_strategy.good_one idx
-        rescue NodeError
-          Orientdb4r::logger.warn "node error, index=#{idx}"
-          lb_strategy.bad_index idx
-        end
-        response
-      end
-
-
-      ###
-      # Calls the server with a specific task.
-      # No already existing client/server stuff
-      # (e.g. session, keep-alive connection, ...) will be used for this call.
-      # Returns a response according to communication channel.
-      def call_server_one_off(options)
+        lb_all_bad_msg = 'all nodes failed to communicate with server!'
         response = nil
+
+        # credentials if not defined explicitly
+        options[:user] = user unless options.include? :user
+        options[:password] = password unless options.include? :password
+
         idx = lb_strategy.node_index
+        raise OrientdbError, lb_all_bad_msg if idx.nil? # no good node found
 
         begin
           node = @nodes[idx]
           begin
-            response = node.one_off_request options
+            response = node.request options
             lb_strategy.good_one idx
             return response
           rescue NodeError => e
@@ -294,19 +284,9 @@ module Orientdb4r
             lb_strategy.bad_one idx
             idx = lb_strategy.node_index
           end
-        end until idx.nil? and response.nil? # both 'nil' <= we tries all node and all with problem
+        end until idx.nil? and response.nil? # both 'nil' <= we tried all nodes and all with problem
 
-        raise OrientdbError, 'all nodes failed to communicate with server!'
-      end
-
-
-      ###
-      # Gets a node according to load balancing strategy.
-      #
-      # !! do NOT use it !!
-      # !! only for purposes of unit testing !!
-      def balanced_node
-        @nodes[lb_strategy.node_index]
+        raise OrientdbError, lb_all_bad_msg
       end
 
 

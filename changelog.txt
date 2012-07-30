@@ -1,7 +1,7 @@
 0.3.0 07/x/12
 ===============
-- 'rest-client' replaced by 'excon' for HTTP communication with Keep-Alive
-- introduced support for distributed server
+- introduced support for cluster of distributed servers
+- initial strategies for load balancing: sequence, round robin
 
 0.2.10 /07/07/21
 - experimental support for Excon HTTP library with Keep-Alive connection

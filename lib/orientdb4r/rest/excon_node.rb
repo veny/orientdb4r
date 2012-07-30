@@ -61,6 +61,17 @@ module Orientdb4r
     end
 
 
+    # ---------------------------------------------------------- Assistant Stuff
+
+    protected
+
+      ###
+      # Gets value of the Basic Auth header.
+      def basic_auth_header(user, password)
+        b64 = Base64.encode64("#{user}:#{password}").delete("\r\n")
+        "Basic #{b64}"
+      end
+
     private
 
       ###

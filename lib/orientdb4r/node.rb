@@ -7,6 +7,7 @@ module Orientdb4r
     include Utils
 
     attr_reader :host, :port # they are immutable
+    attr_reader :session_id
 
     ###
     # Constructor.
@@ -21,7 +22,7 @@ module Orientdb4r
     ###
     # Cleans up resources used by the node.
     def cleanup
-      raise NotImplementedError, 'this should be overridden by subclass'
+      @session_id = nil
     end
 
 

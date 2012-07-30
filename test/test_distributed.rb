@@ -9,24 +9,24 @@ class TestDatabase < Test::Unit::TestCase
 
 
   ###
-  # Test inintialization without cluster.
+  # Test inintialization of single node.
   def test_one_node_initialization
     client = Orientdb4r.client :instance => :new
     assert_not_nil client.nodes
     assert_instance_of Array, client.nodes
     assert_equal 1, client.nodes.size
-    assert_not_nil client.send(:balanced_node)
+    assert_equal 2480, client.nodes[0].port
   end
 
   ###
-  # Test inintialization.
+  # Test inintialization of more nodes.
   def test_nodes_initialization
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :instance => :new
     assert_not_nil client.nodes
     assert_instance_of Array, client.nodes
     assert_equal 2, client.nodes.size
-    assert_not_nil client.send(:balanced_node)
-    assert_not_nil client.send(:balanced_node)
+    assert_equal 2480, client.nodes[0].port
+    assert_equal 2481, client.nodes[1].port
   end
 
   ###
@@ -38,8 +38,8 @@ class TestDatabase < Test::Unit::TestCase
     assert_instance_of Orientdb4r::Sequence, lb_strategy
     assert_equal 0, lb_strategy.node_index
     assert_equal 0, lb_strategy.node_index
-    assert_equal client.nodes[0], client.send(:balanced_node)
-    assert_equal client.nodes[0], client.send(:balanced_node)
+    assert_equal client.nodes[0], client.nodes[client.lb_strategy.node_index]
+    assert_equal client.nodes[0], client.nodes[client.lb_strategy.node_index]
   end
 
   ###
@@ -52,9 +52,9 @@ class TestDatabase < Test::Unit::TestCase
     assert_equal 0, lb_strategy.node_index
     assert_equal 1, lb_strategy.node_index
     assert_equal 0, lb_strategy.node_index
-    assert_equal client.nodes[1], client.send(:balanced_node)
-    assert_equal client.nodes[0], client.send(:balanced_node)
-    assert_equal client.nodes[1], client.send(:balanced_node)
+    assert_equal client.nodes[1], client.nodes[client.lb_strategy.node_index]
+    assert_equal client.nodes[0], client.nodes[client.lb_strategy.node_index]
+    assert_equal client.nodes[1], client.nodes[client.lb_strategy.node_index]
   end
 
   def test_load_balancing_in_problems
@@ -88,7 +88,10 @@ class TestDatabase < Test::Unit::TestCase
     end
 
     # second node bad => second call has to be realized by first one
+puts '--------------------------'
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :load_balancing => :round_robin, :instance => :new
+      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
 
   end
 
