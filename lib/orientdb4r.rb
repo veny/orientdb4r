@@ -46,7 +46,14 @@ module Orientdb4r
       RestClient.proxy = url
     end
 
+    ###
+    # Logger used for logging output
     attr_accessor :logger
+
+    ###
+    # Predefined connection library.
+    # Can be overriden by option in client initialization.
+    attr_accessor :connection_library
 
   end
 
@@ -91,6 +98,10 @@ end
 # Configuration of logging.
 Orientdb4r::logger = Logger.new(STDOUT)
 Orientdb4r::logger.level = Logger::INFO
+
+# Default connection library
+Orientdb4r::connection_library = :restclient
+#Orientdb4r::connection_library = :excon
 
 Orientdb4r::logger.info \
     "Orientdb4r #{Orientdb4r::VERSION}, running on Ruby #{RUBY_VERSION} (#{RUBY_RELEASE_DATE}) [#{RUBY_PLATFORM}]"

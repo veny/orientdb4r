@@ -88,7 +88,6 @@ class TestDatabase < Test::Unit::TestCase
     end
 
     # second node bad => second call has to be realized by first one
-puts '--------------------------'
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :load_balancing => :round_robin, :instance => :new
       client.connect :database => 'temp', :user => 'admin', :password => 'admin'
       client.connect :database => 'temp', :user => 'admin', :password => 'admin'

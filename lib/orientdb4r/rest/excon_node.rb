@@ -7,21 +7,6 @@ module Orientdb4r
   # accessible view REST API and 'excon' library on the client side.
   class ExconNode < RestNode
 
-    def one_off_request(options) #:nodoc:
-      address = "#{url}/#{options[:uri]}"
-      headers = {}
-      headers['Authorization'] = basic_auth_header(options[:user], options[:password]) if options.include?(:user)
-      headers['Cookie'] = "#{SESSION_COOKIE_NAME}=#{session_id}" unless session_id.nil?
-      response = ::Excon.send options[:method].to_sym, address, :headers => headers
-
-      def response.code
-        status
-      end
-
-      response
-    end
-
-
     def request(options) #:nodoc:
       verify_options(options, {:user => :mandatory, :password => :mandatory, \
           :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional})
@@ -38,19 +23,32 @@ module Orientdb4r
       opts[:path] = opts[:uri] if opts.include? :uri   # just other naming convention
       opts.delete :uri
 
-      response = connection.request opts
+      was_ok = false
+      begin
+        response = connection.request opts
+        was_ok = (2 == (response.status / 100))
 
-      # store session ID if received to reuse in next request
-      cookies = CGI::Cookie::parse(response.headers['Set-Cookie'])
-      sessid = cookies[SESSION_COOKIE_NAME][0]
-      if session_id != sessid
-        @session_id = sessid
-        Orientdb4r::logger.debug "new session id: #{session_id}"
+        # store session ID if received to reuse in next request
+        cookies = CGI::Cookie::parse(response.headers['Set-Cookie'])
+        sessid = cookies[SESSION_COOKIE_NAME][0]
+        if session_id != sessid
+          @session_id = sessid
+          Orientdb4r::logger.debug "new session id: #{session_id}"
+        end
+
+        def response.code
+          status
+        end
+
+      rescue Excon::Errors::SocketError
+        raise NodeError
       end
 
-
-      def response.code
-        status
+      # this is workaround for a strange behavior:
+      # excon delivered magic response status '1' when previous request was not 20x
+      unless was_ok
+        connection.reset
+        Orientdb4r::logger.debug 'response code not 20x -> connection reset'
       end
 
       response

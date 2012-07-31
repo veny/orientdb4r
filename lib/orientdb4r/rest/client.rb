@@ -14,7 +14,7 @@ module Orientdb4r
       super()
       options_pattern = { :host => 'localhost', :port => 2480, :ssl => false,
                           :nodes => :optional, :load_balancing => :sequence,
-                          :connection_library => :restclient}
+                          :connection_library => Orientdb4r::connection_library}
       verify_and_sanitize_options(options, options_pattern)
 
       # fake nodes for single server
