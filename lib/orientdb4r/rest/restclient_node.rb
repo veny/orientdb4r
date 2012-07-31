@@ -29,7 +29,11 @@ module Orientdb4r
         response = ::RestClient::Request.new(opts).execute
 
         # store session ID if received to reuse in next request
-        @session_id = response.cookies[SESSION_COOKIE_NAME]
+        sessid = response.cookies[SESSION_COOKIE_NAME]
+        if session_id != sessid
+          @session_id = sessid
+          Orientdb4r::logger.debug "new session id: #{session_id}"
+        end
 
       rescue Errno::ECONNREFUSED
         raise NodeError

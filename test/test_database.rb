@@ -184,4 +184,21 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::ConnectionError do @client.delete_document('#1:0'); end
   end
 
+
+  ###
+  # Tests using of session ID.
+  def test_session_id
+    client = Orientdb4r.client :instance => :new
+    assert_nil client.nodes[0].session_id
+    client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    session_id = client.nodes[0].session_id
+    assert_not_nil session_id
+    client.query 'SELECT count(*) FROM OUser'
+    assert_equal session_id, client.nodes[0].session_id
+    client.get_class 'OUser'
+    assert_equal session_id, client.nodes[0].session_id
+    client.disconnect
+    assert_nil client.nodes[0].session_id
+  end
+
 end

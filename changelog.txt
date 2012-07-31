@@ -10,7 +10,6 @@
 - introduced class Rid
 - added feature Client#delete_database
 
-
 0.2.8 /07/07/16
 - changed and stabilized exception handling
 - added feature Client#create_class(:properties)
