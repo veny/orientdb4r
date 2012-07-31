@@ -60,7 +60,6 @@ module Orientdb4r
       @user = options[:user]
       @password = options[:password]
 
-      node = nodes[lb_strategy.node_index]
       begin
         response = call_server(:method => :get, :uri => "connect/#{@database}")
       rescue

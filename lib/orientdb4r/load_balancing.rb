@@ -7,7 +7,7 @@ module Orientdb4r
     # If occures a new try to communicate from node can be tested.
     RECOVERY_TIMEOUT = 30
 
-    attr_reader :nodes_count
+    attr_reader :nodes_count, :bad_nodes
 
     ###
     # Constructor.

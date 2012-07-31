@@ -81,17 +81,22 @@ class TestDatabase < Test::Unit::TestCase
 
     # more nodes
 
-    # first node bad, second must work
+    # first node bad, second must work (sequence)
     client = Orientdb4r.client :nodes => [{:port => 2481}, {}], :instance => :new
     assert_nothing_thrown do # there has to be ERROR in log
       client.connect :database => 'temp', :user => 'admin', :password => 'admin'
     end
+    assert_equal 1, client.lb_strategy.bad_nodes.size
+    assert client.lb_strategy.bad_nodes.include? 0
 
-    # second node bad => second call has to be realized by first one
+    # second node bad => second call has to be realized by first one (round robin)
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :load_balancing => :round_robin, :instance => :new
-      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-
+    assert client.lb_strategy.bad_nodes.empty?
+    client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    assert client.lb_strategy.bad_nodes.empty?
+    client.query 'SELECT FROM OUser'
+    assert_equal 1, client.lb_strategy.bad_nodes.size
+    assert client.lb_strategy.bad_nodes.include? 1
   end
 
 end
