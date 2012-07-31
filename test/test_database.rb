@@ -26,13 +26,9 @@ class TestDatabase < Test::Unit::TestCase
     assert rslt.size > 0
     assert rslt.include? 'classes'
 
-    #assert_equal 'localhost', @client.host # TODO moved to Node; mock?
-    #assert_equal 2480, @client.port
-    #assert_equal false, @client.ssl
     assert_equal 'admin', @client.user
     assert_equal 'admin', @client.password
     assert_equal 'temp', @client.database
-    #assert_not_nil @client.session_id
     assert_not_nil @client.server_version
 
     # connection refused
@@ -66,13 +62,9 @@ class TestDatabase < Test::Unit::TestCase
     # unable to query after disconnect
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end
 
-    #assert_equal 'localhost', @client.host # TODO moved to Node; mock?
-    #assert_equal 2480, @client.port
-    #assert_equal false, @client.ssl
     assert_nil @client.user
     assert_nil @client.password
     assert_nil @client.database
-    #assert_nil @client.session_id
     assert_nil @client.server_version
   end
 

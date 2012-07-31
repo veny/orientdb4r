@@ -16,6 +16,7 @@ class TestDatabase < Test::Unit::TestCase
     assert_instance_of Array, client.nodes
     assert_equal 1, client.nodes.size
     assert_equal 2480, client.nodes[0].port
+    assert_equal false, client.nodes[0].ssl
   end
 
   ###
@@ -27,6 +28,8 @@ class TestDatabase < Test::Unit::TestCase
     assert_equal 2, client.nodes.size
     assert_equal 2480, client.nodes[0].port
     assert_equal 2481, client.nodes[1].port
+    assert_equal false, client.nodes[0].ssl
+    assert_equal false, client.nodes[1].ssl
   end
 
   ###
