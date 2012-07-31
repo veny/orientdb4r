@@ -40,7 +40,7 @@ module Orientdb4r
     protected
 
       def search_next_good(bad_idx)
-        Orientdb4r::logger.warn "identified bad node, idx=#{bad_idx}"
+        Orientdb4r::logger.warn "identified bad node, idx=#{bad_idx}, age=#{Time.now - @bad_nodes[bad_idx]} [s]"
         1.upto(nodes_count) do |i|
           candidate = (i + bad_idx) % nodes_count
           unless @bad_nodes.include? candidate

@@ -279,6 +279,7 @@ module Orientdb4r
             response = node.request options
             lb_strategy.good_one idx
             return response
+
           rescue NodeError => e
             Orientdb4r::logger.error "node error, index=#{idx}, msg=#{e.message}, #{node}"
             lb_strategy.bad_one idx
