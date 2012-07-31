@@ -331,7 +331,6 @@ module Orientdb4r
           when content_type.start_with?('application/json')
             ::JSON.parse(response.body)
           else
-puts "============== #{response}"
             raise OrientdbError, "unsuported content type: #{content_type}"
           end
 

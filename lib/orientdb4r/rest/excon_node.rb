@@ -23,18 +23,31 @@ module Orientdb4r
 
 
     def request(options) #:nodoc:
-      raise OrientdbError, 'long life connection not initialized' if @connection.nil?
+      verify_options(options, {:user => :mandatory, :password => :mandatory, \
+          :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional})
 
-      head = headers
-      head['Content-Type'] = options[:content_type] if options.include? :content_type
-      options[:headers] = head
+      opts = options.clone # if not cloned we change original hash map that cannot be used more with load balancing
 
-      options[:body] = options[:data] if options.include? :data # just other naming convention
-      options.delete :data
-      options[:path] = options[:uri] if options.include? :uri   # just other naming convention
-      options.delete :uri
+      # Auth + Cookie + Content-Type
+      opts[:headers] = headers(opts)
+      opts.delete :user
+      opts.delete :password
 
-      response = @connection.request options
+      opts[:body] = opts[:data] if opts.include? :data # just other naming convention
+      opts.delete :data
+      opts[:path] = opts[:uri] if opts.include? :uri   # just other naming convention
+      opts.delete :uri
+
+      response = connection.request opts
+
+      # store session ID if received to reuse in next request
+      cookies = CGI::Cookie::parse(response.headers['Set-Cookie'])
+      sessid = cookies[SESSION_COOKIE_NAME][0]
+      if session_id != sessid
+        @session_id = sessid
+        Orientdb4r::logger.debug "new session id: #{session_id}"
+      end
+
 
       def response.code
         status
@@ -45,39 +58,47 @@ module Orientdb4r
 
 
     def post_connect(user, password, http_response) #:nodoc:
-      @basic_auth = basic_auth_header(user, password)
 
       cookies = CGI::Cookie::parse(http_response.headers['Set-Cookie'])
       @session_id = cookies[SESSION_COOKIE_NAME][0]
 
-      @connection = Excon.new(url) if @connection.nil?
     end
 
 
     def cleanup #:nodoc:
-      @session_id = nil
-      @basic_auth = nil
+      super
+      connection.reset
       @connection = nil
     end
 
 
     # ---------------------------------------------------------- Assistant Stuff
 
-    protected
+    private
+
+      ###
+      # Gets Excon connection.
+      def connection
+        @connection ||= Excon::Connection.new(url)
+          #:read_timeout => self.class.read_timeout,
+          #:write_timeout => self.class.write_timeout,
+          #:connect_timeout => self.class.connect_timeout
+      end
+
+      ###
+      # Get request headers prepared with session ID and Basic Auth.
+      def headers(options)
+        rslt = {'Authorization' => basic_auth_header(options[:user], options[:password])}
+        rslt['Cookie'] = "#{SESSION_COOKIE_NAME}=#{session_id}" unless session_id.nil?
+        rslt['Content-Type'] = options[:content_type] if options.include? :content_type
+        rslt
+      end
 
       ###
       # Gets value of the Basic Auth header.
       def basic_auth_header(user, password)
         b64 = Base64.encode64("#{user}:#{password}").delete("\r\n")
         "Basic #{b64}"
-      end
-
-    private
-
-      ###
-      # Get request headers prepared with session ID and Basic Auth.
-      def headers
-        {'Authorization' => @basic_auth, 'Cookie' => "#{SESSION_COOKIE_NAME}=#{session_id}"}
       end
 
   end

@@ -14,7 +14,7 @@ class TestDatabase < Test::Unit::TestCase
   Orientdb4r::logger.level = Logger::DEBUG
 
   def setup
-    @client = Orientdb4r.client
+    @client = Orientdb4r.client :connection_library=>:excon
   end
 
   ###
