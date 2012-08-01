@@ -282,6 +282,7 @@ module Orientdb4r
 
           rescue NodeError => e
             Orientdb4r::logger.error "node error, index=#{idx}, msg=#{e.message}, #{node}"
+            node.cleanup
             lb_strategy.bad_one idx
             idx = lb_strategy.node_index
           end

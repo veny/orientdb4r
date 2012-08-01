@@ -4,7 +4,7 @@ module Orientdb4r
   # Base class for implementation of load balancing strategy.
   class LBStrategy
 
-    # If occures a new try to communicate from node can be tested.
+    # If occures a new try to communicate from node can be tested [s].
     RECOVERY_TIMEOUT = 30
 
     attr_reader :nodes_count, :bad_nodes
@@ -41,15 +41,47 @@ module Orientdb4r
 
       def search_next_good(bad_idx)
         Orientdb4r::logger.warn "identified bad node, idx=#{bad_idx}, age=#{Time.now - @bad_nodes[bad_idx]} [s]"
+
+        # alternative nodes of not found a good one
+        timeout_candidate = nil
+        lru_candidate = nil
+        lru_time_max = 0
+
+        # first round - try to find a first good one
         1.upto(nodes_count) do |i|
           candidate = (i + bad_idx) % nodes_count
-          unless @bad_nodes.include? candidate
+
+
+          if @bad_nodes.include? candidate
+            failure_time = @bad_nodes[candidate]
+            now = Time.now
+            # timeout
+            if (now - failure_time) > RECOVERY_TIMEOUT
+              timeout_candidate = candidate
+              Orientdb4r::logger.debug "node timeout recovery, idx=#{candidate}"
+              good_one(candidate)
+            end
+            # LRU
+            if (now - failure_time) > lru_time_max
+              lru_time_max = now - failure_time
+              lru_candidate = candidate
+            end
+          else @bad_nodes.include? candidate
             Orientdb4r::logger.debug "found good node, idx=#{candidate}"
             return candidate
           end
         end
 
-        # TODO implement search based on LRU for next round
+        # no good index found -> try timeouted and then LRU
+
+        unless timeout_candidate.nil?
+          Orientdb4r::logger.debug "good node not found, delivering timeouted one, idx=#{timeout_candidate}"
+          return timeout_candidate
+        end
+        unless lru_candidate.nil?
+          Orientdb4r::logger.debug "good node not found, delivering according to LRU, idx=#{lru_candidate}"
+          return lru_candidate
+        end
 
         Orientdb4r::logger.error 'no nodes more, all invalid'
         nil
