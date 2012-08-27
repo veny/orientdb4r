@@ -7,6 +7,8 @@ module Orientdb4r
   # accessible view REST API and 'excon' library on the client side.
   class ExconNode < RestNode
 
+    attr_accessor :proxy
+
     def request(options) #:nodoc:
       verify_options(options, {:user => :mandatory, :password => :mandatory, \
           :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional})
@@ -77,10 +79,15 @@ module Orientdb4r
       ###
       # Gets Excon connection.
       def connection
-        @connection ||= Excon::Connection.new(url)
-          #:read_timeout => self.class.read_timeout,
-          #:write_timeout => self.class.write_timeout,
-          #:connect_timeout => self.class.connect_timeout
+        return @connection unless @connection.nil?
+
+        options = {}
+        options[:proxy] = proxy unless proxy.nil?
+
+        @connection ||= Excon::Connection.new(url, options)
+        #:read_timeout => self.class.read_timeout,
+        #:write_timeout => self.class.write_timeout,
+        #:connect_timeout => self.class.connect_timeout
       end
 
       ###

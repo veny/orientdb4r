@@ -12,18 +12,22 @@ module Orientdb4r
 
     def initialize(options) #:nodoc:
       super()
-      options_pattern = { :host => 'localhost', :port => 2480, :ssl => false,
-                          :nodes => :optional, :load_balancing => :sequence,
-                          :connection_library => Orientdb4r::connection_library}
+      options_pattern = {
+        :host => 'localhost', :port => 2480, :ssl => false,
+        :nodes => :optional,
+        :connection_library => :restclient,
+        :load_balancing => :sequence,
+        :proxy => :optional
+      }
       verify_and_sanitize_options(options, options_pattern)
 
       # fake nodes for single server
       if options[:nodes].nil?
         options[:nodes] = [{:host => options[:host], :port => options[:port], :ssl => options[:ssl]}]
       end
-      raise ArgumentError, 'nodes has to be arrray' unless options[:nodes].is_a? Array
+      raise ArgumentError, 'nodes has to be array' unless options[:nodes].is_a? Array
 
-      # instantiate nodes accroding to HTTP library
+      # instantiate nodes according to HTTP library
       @connection_library = options[:connection_library]
       node_clazz = case connection_library
         when :restclient then Orientdb4r::RestClientNode
@@ -45,6 +49,14 @@ module Orientdb4r
         else raise ArgumentError, "unknow load balancing type: #{load_balancing}"
       end
 
+      # proxy
+      @proxy = options[:proxy]
+      unless proxy.nil?
+        case connection_library
+          when :restclient then ::RestClient.proxy = proxy
+          when :excon then nodes.each { |node| node.proxy = proxy }
+        end
+      end
 
       Orientdb4r::logger.info "client initialized with #{@nodes.size} node(s) "
       Orientdb4r::logger.info "connection_library=#{options[:connection_library]}, load_balancing=#{load_balancing}"

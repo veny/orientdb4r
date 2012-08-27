@@ -20,7 +20,7 @@ class FlatClassPerf < FStudy::Case
     client.command 'DELETE FROM User'
   end
   def data
-    1.upto(10000) do |i|
+    1.upto(100000) do |i|
       Orientdb4r::logger.info "...done: #{i}" if 0 == (i % 1000)
       first_name = dg.word
       surname = dg.word

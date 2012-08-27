@@ -3,7 +3,7 @@ require 'orientdb4r'
 
 ###
 # This class tests Utils methods.
-class TestDmo < Test::Unit::TestCase
+class TestUtils < Test::Unit::TestCase
   include Orientdb4r::Utils
 
   def test_verify_options

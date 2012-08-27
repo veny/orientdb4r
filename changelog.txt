@@ -1,3 +1,7 @@
+0.3.1 2012-08-27
+- Timeout for reuse of dirty (already failed) nodes in load balancing
+- Bug Fix #14, #15
+
 0.3.0 2012-08-01
 - introduced support for cluster of distributed servers
 - initial strategies for load balancing: sequence, round robin

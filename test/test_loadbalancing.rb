@@ -3,39 +3,16 @@ require 'orientdb4r'
 
 ###
 # This class tests communication with OrientDB cluster and load balancing.
-class TestDatabase < Test::Unit::TestCase
+class TestLoadBalancing < Test::Unit::TestCase
 
   Orientdb4r::logger.level = Logger::DEBUG
 
 
   ###
-  # Test inintialization of single node.
-  def test_one_node_initialization
-    client = Orientdb4r.client :instance => :new
-    assert_not_nil client.nodes
-    assert_instance_of Array, client.nodes
-    assert_equal 1, client.nodes.size
-    assert_equal 2480, client.nodes[0].port
-    assert_equal false, client.nodes[0].ssl
-  end
-
-  ###
-  # Test inintialization of more nodes.
-  def test_nodes_initialization
-    client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :instance => :new
-    assert_not_nil client.nodes
-    assert_instance_of Array, client.nodes
-    assert_equal 2, client.nodes.size
-    assert_equal 2480, client.nodes[0].port
-    assert_equal 2481, client.nodes[1].port
-    assert_equal false, client.nodes[0].ssl
-    assert_equal false, client.nodes[1].ssl
-  end
-
-  ###
   # Test default Sequence strategy.
   def test_sequence_loadbalancing
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :instance => :new
+    assert_equal :sequence, client.load_balancing
     lb_strategy = client.lb_strategy
     assert_not_nil lb_strategy
     assert_instance_of Orientdb4r::Sequence, lb_strategy
@@ -49,6 +26,7 @@ class TestDatabase < Test::Unit::TestCase
   # Test RoundRobin strategy.
   def test_roundrobin_loadbalancing
     client = Orientdb4r.client :nodes => [{}, {:port => 2481}], :load_balancing => :round_robin, :instance => :new
+    assert_equal :round_robin, client.load_balancing
     lb_strategy = client.lb_strategy
     assert_not_nil lb_strategy
     assert_instance_of Orientdb4r::RoundRobin, lb_strategy
@@ -60,6 +38,8 @@ class TestDatabase < Test::Unit::TestCase
     assert_equal client.nodes[1], client.nodes[client.lb_strategy.node_index]
   end
 
+  ###
+  # Tests variant reasons for LB failure.
   def test_load_balancing_in_problems
     # invalid port
     client = Orientdb4r.client :port => 9999, :instance => :new

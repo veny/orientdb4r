@@ -9,10 +9,23 @@ module Orientdb4r
     # # Regexp to validate format of providet version.
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
 
+    # connection parameters
     attr_reader :user, :password, :database
+    # version loaded from server
     attr_reader :server_version
-    attr_reader :nodes, :connection_library
-    attr_reader :load_balancing, :lb_strategy
+    # type of connection library [:restclient, :excon]
+    attr_reader :connection_library
+    # type of load balancing [:sequence, :round_robin]
+    attr_reader :load_balancing
+    # proxy for remote communication
+    attr_reader :proxy
+
+    # intern structures
+
+    # nodes responsible for communication with a server
+    attr_reader :nodes
+    # object implementing a LB strategy
+    attr_reader :lb_strategy
 
     ###
     # Constructor.
