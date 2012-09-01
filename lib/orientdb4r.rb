@@ -11,6 +11,7 @@ module Orientdb4r
   autoload :Utils,          'orientdb4r/utils'
   autoload :Client,         'orientdb4r/client'
   autoload :RestClient,     'orientdb4r/rest/client'
+  autoload :BinClient,      'orientdb4r/bin/client'
   autoload :Rid,            'orientdb4r/rid'
   autoload :HashExtension,  'orientdb4r/rest/model'
   autoload :OClass,         'orientdb4r/rest/model'
@@ -37,6 +38,7 @@ module Orientdb4r
 
       Thread.exclusive {
         Thread.current[:orientdb_client] ||= RestClient.new options
+        #Thread.current[:orientdb_client] ||= BinClient.new options
       }
     end
 
