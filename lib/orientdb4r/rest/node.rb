@@ -9,6 +9,8 @@ module Orientdb4r
     SESSION_COOKIE_NAME = 'OSESSIONID'
 
     attr_reader :ssl
+    # HTTP header 'User-Agent'
+    attr_accessor :user_agent
 
     ###
     # Constructor.

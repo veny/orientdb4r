@@ -22,8 +22,10 @@ module Orientdb4r
       data = '' if data.nil? and :post == opts[:method] # POST has to have data
       opts[:payload] = data unless data.nil?
 
-      # headers
+      # cookies
       opts[:cookies] = { SESSION_COOKIE_NAME => session_id} unless session_id.nil?
+      # headers
+      opts[:headers] = { 'User-Agent' => user_agent } unless user_agent.nil?
 
       begin
         response = ::RestClient::Request.new(opts).execute

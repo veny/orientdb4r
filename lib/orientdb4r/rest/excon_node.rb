@@ -96,6 +96,7 @@ module Orientdb4r
         rslt = {'Authorization' => basic_auth_header(options[:user], options[:password])}
         rslt['Cookie'] = "#{SESSION_COOKIE_NAME}=#{session_id}" unless session_id.nil?
         rslt['Content-Type'] = options[:content_type] if options.include? :content_type
+        rslt['User-Agent'] = user_agent unless user_agent.nil?
         rslt
       end
 

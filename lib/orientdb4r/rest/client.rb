@@ -17,7 +17,8 @@ module Orientdb4r
         :nodes => :optional,
         :connection_library => :restclient,
         :load_balancing => :sequence,
-        :proxy => :optional
+        :proxy => :optional,
+        :user_agent => :optional
       }
       verify_and_sanitize_options(options, options_pattern)
 
@@ -56,6 +57,13 @@ module Orientdb4r
           when :restclient then ::RestClient.proxy = proxy
           when :excon then nodes.each { |node| node.proxy = proxy }
         end
+      end
+
+      # user-agent
+      agent = options[:user_agent]
+      unless agent.nil?
+puts "CCCCCCCCC #{agent}"
+        nodes.each { |node| node.user_agent = agent }
       end
 
       Orientdb4r::logger.info "client initialized with #{@nodes.size} node(s) "
