@@ -40,7 +40,7 @@ class TestDdo < Test::Unit::TestCase
     assert !clazz.properties.empty?
     assert_nothing_thrown do clazz.property(:password); end
     assert_raise ArgumentError do clazz.property(:unknown_prop); end
-    assert_equal '', clazz.super_class
+    assert_equal 'OIdentity', clazz.super_class
     assert_instance_of Array, clazz.clusters
     assert !clazz.clusters.empty?
     assert_not_nil clazz.default_cluster
