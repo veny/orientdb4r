@@ -18,7 +18,8 @@ module Orientdb4r
         :connection_library => :restclient,
         :load_balancing => :sequence,
         :proxy => :optional,
-        :user_agent => :optional
+        :user_agent => :optional,
+        :lb_recover_time => :optional
       }
       verify_and_sanitize_options(options, options_pattern)
 
@@ -49,6 +50,10 @@ module Orientdb4r
         when :round_robin then Orientdb4r::RoundRobin.new nodes.size
         else raise ArgumentError, "unknow load balancing type: #{load_balancing}"
       end
+      # recover time
+      recover_time = options[:lb_recover_time]
+      @lb_strategy.recover_time = recover_time.to_i unless recover_time.nil?
+
 
       # proxy
       @proxy = options[:proxy]
@@ -62,7 +67,6 @@ module Orientdb4r
       # user-agent
       agent = options[:user_agent]
       unless agent.nil?
-puts "CCCCCCCCC #{agent}"
         nodes.each { |node| node.user_agent = agent }
       end
 

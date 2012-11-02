@@ -4,16 +4,18 @@ module Orientdb4r
   # Base class for implementation of load balancing strategy.
   class LBStrategy
 
-    # If occures a new try to communicate from node can be tested [s].
-    RECOVERY_TIMEOUT = 30
+    # After what time [s] can be a failed node reused in load balancing.
+    DEFAULT_RECOVER_TIME = 30
 
-    attr_reader :nodes_count, :bad_nodes
+    attr_reader   :nodes_count, :bad_nodes
+    attr_accessor :recover_time
 
     ###
     # Constructor.
     def initialize nodes_count
       @nodes_count = nodes_count
       @bad_nodes = {}
+      @recover_time = DEFAULT_RECOVER_TIME
     end
 
     ###
@@ -56,7 +58,7 @@ module Orientdb4r
             failure_time = @bad_nodes[candidate]
             now = Time.now
             # timeout candidate
-            if (now - failure_time) > RECOVERY_TIMEOUT
+            if (now - failure_time) > recover_time
               timeout_candidate = candidate
               Orientdb4r::logger.debug "node timeout recovery, idx=#{candidate}"
               good_one(candidate)
