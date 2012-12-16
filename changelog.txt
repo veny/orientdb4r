@@ -1,5 +1,6 @@
 0.3.3 2012-12-16
 - Enhancement #18 : Added 'abstract' option into creating a new class
+- Enhancement #19 : Added GET - List Databases
 
 0.3.2 2012-11-02
 - Enhancement #13 : configurable User-Agent request header

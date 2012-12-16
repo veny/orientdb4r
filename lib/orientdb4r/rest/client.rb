@@ -197,6 +197,12 @@ module Orientdb4r
     end
 
 
+    def list_databases() #:nodoc:
+      response = call_server :method => :get, :uri => 'listDatabases'
+      rslt = process_response(response)
+      rslt['databases']
+    end
+
     # ---------------------------------------------------------------------- SQL
 
     def query(sql, options=nil) #:nodoc:

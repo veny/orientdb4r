@@ -162,6 +162,18 @@ class TestDatabase < Test::Unit::TestCase
 
 
   ###
+  # GET List Databases
+  # Retrieves the available databases.
+  def test_list_databases
+    dbs = @client.list_databases
+    assert_not_nil dbs
+    assert_instance_of Array, dbs
+    assert !dbs.empty?
+    assert dbs.include? 'temp'
+  end
+
+
+  ###
   # Test of :assert_connected before advice.
   def test_assert_connected
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end

@@ -107,6 +107,15 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
+    ###
+    # Retrieves the available databases.
+    # That is protected by the resource "server.listDatabases"
+    # that by default is assigned to the guest (anonymous) user in orientdb-server-config.xml.
+    def list_databases()
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
     # ---------------------------------------------------------------------- SQL
 
     ###
