@@ -11,7 +11,8 @@ module Orientdb4r
 
     def request(options) #:nodoc:
       verify_options(options, {:user => :mandatory, :password => :mandatory, \
-          :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional})
+          :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional,
+          :no_session => :optional})
 
       opts = options.clone # if not cloned we change original hash map that cannot be used more with load balancing
 
@@ -19,6 +20,7 @@ module Orientdb4r
       opts[:headers] = headers(opts)
       opts.delete :user
       opts.delete :password
+      use_session = !opts.delete(:no_session)
 
       opts[:body] = opts[:data] if opts.include? :data # just other naming convention
       opts.delete :data
@@ -33,7 +35,7 @@ module Orientdb4r
         # store session ID if received to reuse in next request
         cookies = CGI::Cookie::parse(response.headers['Set-Cookie'])
         sessid = cookies[SESSION_COOKIE_NAME][0]
-        if session_id != sessid
+        if session_id != sessid and use_session
           @session_id = sessid
           Orientdb4r::logger.debug "new session id: #{session_id}"
         end
@@ -94,7 +96,7 @@ module Orientdb4r
       # Get request headers prepared with session ID and Basic Auth.
       def headers(options)
         rslt = {'Authorization' => basic_auth_header(options[:user], options[:password])}
-        rslt['Cookie'] = "#{SESSION_COOKIE_NAME}=#{session_id}" unless session_id.nil?
+        rslt['Cookie'] = "#{SESSION_COOKIE_NAME}=#{session_id}" if !session_id.nil? and !options[:no_session]
         rslt['Content-Type'] = options[:content_type] if options.include? :content_type
         rslt['User-Agent'] = user_agent unless user_agent.nil?
         rslt

@@ -16,6 +16,7 @@ module Orientdb4r
         :host => 'localhost', :port => 2480, :ssl => false,
         :nodes => :optional,
         :connection_library => :restclient,
+#        :connection_library => :excon,
         :load_balancing => :sequence,
         :proxy => :optional,
         :user_agent => :optional,
@@ -80,10 +81,12 @@ module Orientdb4r
     def connect(options) #:nodoc:
       options_pattern = { :database => :mandatory, :user => :mandatory, :password => :mandatory }
       verify_and_sanitize_options(options, options_pattern)
+
       @database = options[:database]
       @user = options[:user]
       @password = options[:password]
 
+      @nodes.each { |node| node.cleanup } # destroy all used session <= problem in 1.3.0-SNAPSHOT
       begin
         response = call_server(:method => :get, :uri => "connect/#{@database}")
       rescue
@@ -139,8 +142,14 @@ module Orientdb4r
       options_pattern = { :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
+      params = { :method => :get, :uri => 'server' }
+      params[:no_session] = true # out of existing session which represents an already done authentication
+
       # additional authentication allowed, overriden in 'call_server' if not defined
-      response = call_server :method => :get, :uri => 'server'
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
+
+      response = call_server params
       process_response(response)
     end
 
@@ -154,8 +163,14 @@ module Orientdb4r
       }
       verify_and_sanitize_options(options, options_pattern)
 
+      params = { :method => :post, :uri => "database/#{options[:database]}/#{options[:type]}" }
+      params[:no_session] = true # out of existing session which represents an already done authentication
+
       # additional authentication allowed, overriden in 'call_server' if not defined
-      response = call_server_one_off :method => :post, :uri => "database/#{options[:database]}/#{options[:type]}"
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
+
+      response = call_server params
       process_response(response)
     end
 
@@ -173,8 +188,10 @@ module Orientdb4r
       options_pattern = { :database => :mandatory, :user => :optional, :password => :optional }
       verify_options(options, options_pattern)
 
-      # additional authentication allowed, overriden in 'call_server' if not defined
       params = {:method => :get, :uri => "database/#{options[:database]}"}
+      params[:no_session] = true # out of existing session which represents an already done authentication
+
+      # additional authentication allowed, overriden in 'call_server' if not defined
       params[:user] = options[:user] if options.include? :user
       params[:password] = options[:password] if options.include? :password
 
@@ -191,14 +208,20 @@ module Orientdb4r
       }
       verify_and_sanitize_options(options, options_pattern)
 
+      params = { :method => :delete, :uri => "database/#{options[:database]}" }
+      params[:no_session] = true # out of existing session which represents an already done authentication
+
       # additional authentication allowed, overriden in 'call_server' if not defined
-      response = call_server_one_off :method => :delete, :uri => "database/#{options[:database]}"
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
+
+      response = call_server params
       process_response(response)
     end
 
 
     def list_databases() #:nodoc:
-      response = call_server :method => :get, :uri => 'listDatabases'
+      response = call_server :method => :get, :uri => 'listDatabases', :no_session => true
       rslt = process_response(response)
       rslt['databases']
     end

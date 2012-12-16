@@ -49,6 +49,9 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::UnauthorizedError do
       @client.connect :database => 'temp', :user => 'admin1', :password => 'admin'
     end
+
+    # clean up
+    @client.disconnect
   end
 
 

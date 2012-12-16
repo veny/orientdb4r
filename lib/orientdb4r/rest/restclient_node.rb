@@ -9,7 +9,8 @@ module Orientdb4r
 
     def request(options) #:nodoc:
       verify_options(options, {:user => :mandatory, :password => :mandatory, \
-          :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional})
+          :uri => :mandatory, :method => :mandatory, :content_type => :optional, :data => :optional,
+          :no_session => :optional})
 
       opts = options.clone # if not cloned we change original hash map that cannot be used more with load balancing
 
@@ -23,7 +24,8 @@ module Orientdb4r
       opts[:payload] = data unless data.nil?
 
       # cookies
-      opts[:cookies] = { SESSION_COOKIE_NAME => session_id} unless session_id.nil?
+      use_session = !opts.delete(:no_session)
+      opts[:cookies] = { SESSION_COOKIE_NAME => session_id} if use_session and !session_id.nil?
       # headers
       opts[:headers] = { 'User-Agent' => user_agent } unless user_agent.nil?
 
@@ -32,7 +34,7 @@ module Orientdb4r
 
         # store session ID if received to reuse in next request
         sessid = response.cookies[SESSION_COOKIE_NAME]
-        if session_id != sessid
+        if session_id != sessid and use_session
           @session_id = sessid
           Orientdb4r::logger.debug "new session id: #{session_id}"
         end
