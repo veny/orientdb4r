@@ -61,6 +61,12 @@ module Orientdb4r
       get_mandatory_attribute :defaultCluster
     end
 
+    ###
+    # Get flag whether the class is abstract.
+    def abstract?
+      get_mandatory_attribute :abstract
+    end
+
   end
 
 

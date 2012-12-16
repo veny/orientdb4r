@@ -45,6 +45,7 @@ class TestDdo < Test::Unit::TestCase
     assert !clazz.clusters.empty?
     assert_not_nil clazz.default_cluster
     assert clazz.kind_of? Orientdb4r::OClass
+    assert !clazz.abstract?
     # test Property
     prop = clazz.property :password
     assert_equal 'password', prop.name
@@ -73,6 +74,15 @@ class TestDdo < Test::Unit::TestCase
     # create with :force=>true
     assert_nothing_thrown do @client.create_class(CLASS, :force => true); end
     assert_nothing_thrown do @client.get_class(CLASS); end
+
+    # create ABSTRACT
+    ab_class = 'testingAbstr'
+    assert_nothing_thrown do @client.create_class(ab_class, :abstract => true); end
+    clazz = @client.get_class ab_class
+    assert clazz.abstract?
+    assert_raise Orientdb4r::ServerError do @client.create_document({ '@class' => ab_class, 'prop1' => 1 }); end
+    # clean up
+    @client.drop_class(ab_class, :mode => :strict)
   end
 
 
