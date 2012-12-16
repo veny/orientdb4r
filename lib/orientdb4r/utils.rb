@@ -81,7 +81,7 @@ module Orientdb4r
   end # Utils
 
 
-  # TODO extend it to work with already defined methods ('before :foo, :baz' after method definition)
+  # TODO extend it to work with already defined methods ('before :foo, :baz' after method definition) [BF #21]
   module Aop2
 
     def self.included(base)

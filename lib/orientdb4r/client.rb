@@ -7,7 +7,7 @@ module Orientdb4r
     DEFAULT_SERVER_VERSION = '1.0.0--'
 
     # # Regexp to validate format of providet version.
-    SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+/
+    SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+[-SNAPHOT]*$/
 
     # connection parameters
     attr_reader :user, :password, :database
@@ -129,12 +129,24 @@ module Orientdb4r
     # Creates a new class in the schema.
     def create_class(name, options={})
       raise ArgumentError, "class name is blank" if blank?(name)
-      opt_pattern = { :extends => :optional , :cluster => :optional, :force => false, :properties => :optional }
+      opt_pattern = {
+          :extends => :optional, :cluster => :optional, :force => false, :abstract => false,
+          :properties => :optional
+      }
       verify_options(options, opt_pattern)
 
       sql = "CREATE CLASS #{name}"
       sql << " EXTENDS #{options[:extends]}" if options.include? :extends
       sql << " CLUSTER #{options[:cluster]}" if options.include? :cluster
+      # abstract (TODO should be block)
+      bigger_1_2 = (compare_versions(server_version, '1.2.0') > 0)
+      if options.include?(:abstract)
+        if bigger_1_2
+          sql << ' ABSTRACT'
+        else
+          Orientdb4r::logger.warn("abstract class not supported in OrientDB version #{compare_versions}")
+        end
+      end
 
       drop_class name if options[:force]
 

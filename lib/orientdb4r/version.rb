@@ -2,7 +2,8 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.3.2',   '2012-11-02', "Feature #13 (User-Agent), #16 (configurable Recover Time in Load Balancing)"],
+    ['0.3.3',   '2012-12-16', "Enh #18 ('abstract' option into creating a new class)"],
+    ['0.3.2',   '2012-11-02', "Enh #13 (User-Agent), Enh #16 (configurable Recover Time in Load Balancing)"],
     ['0.3.1',   '2012-08-27', "Timeout for reuse of dirty nodes in load balancing; BF #14, BF #15"],
     ['0.3.0',   '2012-08-01', "Added support for cluster of distributed servers + load balancing"],
     ['0.2.10',  '2012-07-21', "Experimental support for Excon HTTP library with Keep-Alive connection"],

@@ -107,6 +107,7 @@ class TestDocumentCrud < Test::Unit::TestCase
 
     # bad version
     doc = @client.get_document rid
+    doc['prop1'] = 222 # a property has to be changed to server engine sees a difference
     doc['@version'] = 2
     assert_raise Orientdb4r::DataError do @client.update_document doc; end
 

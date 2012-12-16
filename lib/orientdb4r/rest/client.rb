@@ -109,7 +109,7 @@ module Orientdb4r
         @server_version = DEFAULT_SERVER_VERSION
       end
 
-      Orientdb4r::logger.debug "successfully connected to server, version=#{server_version}"
+      Orientdb4r::logger.info "successfully connected to server, version=#{server_version}"
       @connected = true
       rslt
     end

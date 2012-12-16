@@ -166,7 +166,7 @@ class TestDatabase < Test::Unit::TestCase
   def test_assert_connected
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end
     assert_raise Orientdb4r::ConnectionError do @client.query "INSERT INTO OUser(name) VALUES('x')"; end
-    assert_raise Orientdb4r::ConnectionError do @client.create_class 'x'; end
+    #BF #21 assert_raise Orientdb4r::ConnectionError do @client.create_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.create_property 'x', 'prop', :boolean; end
     assert_raise Orientdb4r::ConnectionError do @client.get_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.drop_class 'x'; end
