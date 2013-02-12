@@ -102,8 +102,13 @@ class TestDmo < Test::Unit::TestCase
     assert_raise Orientdb4r::ServerError do
       @client.query 'xxx'
     end
-    # record not found
-    assert_raise Orientdb4r::NotFoundError do @client.query 'SELECT FROM #4:1111'; end
+    # record not found in existing cluster
+    entries = @client.query 'SELECT FROM #0:1111'
+    assert_not_nil entries
+    assert_instance_of Array, entries
+    assert entries.empty?
+    # try to find entry in a non-existing cluster
+    assert_raise Orientdb4r::ServerError do @client.query 'SELECT FROM #111:1111'; end
     # used for INSERT
     assert_raise Orientdb4r::ServerError do
       @client.query "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (0, 'string0', [])"
