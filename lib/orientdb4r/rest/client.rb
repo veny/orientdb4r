@@ -220,11 +220,44 @@ module Orientdb4r
     end
 
 
-    def list_databases() #:nodoc:
+    def list_databases #:nodoc:
       response = call_server :method => :get, :uri => 'listDatabases', :no_session => true
       rslt = process_response(response)
       rslt['databases']
     end
+
+
+    def export(options=nil) #:nodoc:
+      raise ArgumentError, 'options have to be a Hash' if !options.nil? and !options.kind_of? Hash
+
+      if options.nil?
+        # use database from connect
+        raise ConnectionError, 'client has to be connected if no params' unless connected?
+        options = { :database => database }
+      end
+
+      options_pattern = { :database => :mandatory, :user => :optional, :password => :optional, :file => :optional }
+      verify_options(options, options_pattern)
+
+      params = {:method => :get, :uri => "export/#{options[:database]}"}
+      params[:no_session] = true # out of existing session which represents an already done authentication
+
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
+
+      response = call_server params
+puts "QQ #{response.headers[:content_disposition]}"
+
+      filename = options[:file]
+      filename = response.headers[:content_disposition].split('filename=')[-1] if filename.nil?
+      File.open(filename, 'w') do |f|
+        f.write response.body
+      end
+
+#      process_response(response)
+    end
+
 
     # ---------------------------------------------------------------------- SQL
 

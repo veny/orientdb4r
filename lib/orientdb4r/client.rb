@@ -112,7 +112,14 @@ module Orientdb4r
     # Retrieves the available databases.
     # That is protected by the resource "server.listDatabases"
     # that by default is assigned to the guest (anonymous) user in orientdb-server-config.xml.
-    def list_databases()
+    def list_databases
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
+
+    ###
+    # Exports a gzip file that contains the database JSON export.
+    def export(options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
