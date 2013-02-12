@@ -119,6 +119,7 @@ module Orientdb4r
 
     ###
     # Exports a gzip file that contains the database JSON export.
+    # Returns name of stored file.
     def export(options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end

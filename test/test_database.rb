@@ -2,13 +2,7 @@ require 'test/unit'
 require 'orientdb4r'
 
 ###
-# This class tests following operations:
-# * CONNECT
-# * DISCONNECT
-# * CREATE DATABASE
-# * GET DATABASE
-# * DELETE DATABASE
-# * SERVER info
+# This class tests DB management.
 class TestDatabase < Test::Unit::TestCase
 
   Orientdb4r::logger.level = Logger::DEBUG
@@ -189,6 +183,7 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::ConnectionError do @client.get_document('#1:0'); end
     assert_raise Orientdb4r::ConnectionError do @client.update_document({}); end
     assert_raise Orientdb4r::ConnectionError do @client.delete_document('#1:0'); end
+    assert_raise Orientdb4r::ConnectionError do @client.export; end
   end
 
 
@@ -206,6 +201,42 @@ class TestDatabase < Test::Unit::TestCase
     assert_equal session_id, client.nodes[0].session_id
     client.disconnect
     assert_nil client.nodes[0].session_id
+  end
+
+
+  ###
+  # EXPORT
+  def test_export
+    client = Orientdb4r.client :instance => :new
+
+    # export of connected database
+    client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    rslt = client.export
+    assert File.exist? './temp.gz'
+    assert File.file? './temp.gz'
+    assert 'temp.gz', rslt
+    File.delete './temp.gz'
+
+    # export with given file
+    given_filename = "#{Dir.tmpdir}/TEMP.gz"
+    client.export :file => given_filename
+    assert File.exist? given_filename
+    assert File.file? given_filename
+    assert given_filename, rslt
+
+    # explicit given DB
+    client.disconnect
+    assert_nothing_thrown do
+      client.export :database => 'temp', :user => 'admin', :password => 'admin', :file => given_filename
+    end
+    # unknow DB
+    assert_raise Orientdb4r::UnauthorizedError do
+      client.export :database => 'unknown', :user => 'admin', :password => 'admin'
+    end
+    # bad password
+    assert_raise Orientdb4r::UnauthorizedError do
+      client.export :database => 'temp', :user => 'admin', :password => 'unknown'
+    end
   end
 
 end

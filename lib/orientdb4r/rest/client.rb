@@ -230,10 +230,11 @@ module Orientdb4r
     def export(options=nil) #:nodoc:
       raise ArgumentError, 'options have to be a Hash' if !options.nil? and !options.kind_of? Hash
 
-      if options.nil?
+      if options.nil? or (!options.nil? and options[:database].nil?)
         # use database from connect
-        raise ConnectionError, 'client has to be connected if no params' unless connected?
-        options = { :database => database }
+        raise ConnectionError, 'client has to be connected if no database given' unless connected?
+        options = {} if options.nil?
+        options[:database] = database
       end
 
       options_pattern = { :database => :mandatory, :user => :optional, :password => :optional, :file => :optional }
@@ -247,15 +248,15 @@ module Orientdb4r
       params[:password] = options[:password] if options.include? :password
 
       response = call_server params
-puts "QQ #{response.headers[:content_disposition]}"
+      rslt = process_response(response)
 
       filename = options[:file]
       filename = response.headers[:content_disposition].split('filename=')[-1] if filename.nil?
       File.open(filename, 'w') do |f|
-        f.write response.body
+        f.write rslt
       end
 
-#      process_response(response)
+      filename
     end
 
 
@@ -412,6 +413,8 @@ puts "QQ #{response.headers[:content_disposition]}"
 
         rslt = case
           when content_type.start_with?('text/plain')
+            response.body
+          when content_type.start_with?('application/x-gzip')
             response.body
           when content_type.start_with?('application/json')
             ::JSON.parse(response.body)
