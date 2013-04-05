@@ -124,6 +124,13 @@ module Orientdb4r
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
+
+    ###
+    # Imports a database from an uploaded JSON text file.
+    def import(options)
+      raise NotImplementedError, 'this should be overridden by concrete client'
+    end
+
     # ---------------------------------------------------------------------- SQL
 
     ###
@@ -210,7 +217,8 @@ module Orientdb4r
       rslt = true
       begin
         get_class name
-      rescue OrientdbError
+      rescue OrientdbError => e
+        raise e if e.is_a? ConnectionError and e.message == 'not connected' # workaround for AOP2 (unable to decorate already existing methods)
         rslt = false
       end
       rslt

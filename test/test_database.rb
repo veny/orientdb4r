@@ -177,13 +177,13 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::ConnectionError do @client.query "INSERT INTO OUser(name) VALUES('x')"; end
     #BF #21 assert_raise Orientdb4r::ConnectionError do @client.create_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.create_property 'x', 'prop', :boolean; end
+    assert_raise Orientdb4r::ConnectionError do @client.class_exists? 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.get_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.drop_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.create_document({ '@class' => 'x', :prop => 1 }); end
     assert_raise Orientdb4r::ConnectionError do @client.get_document('#1:0'); end
     assert_raise Orientdb4r::ConnectionError do @client.update_document({}); end
     assert_raise Orientdb4r::ConnectionError do @client.delete_document('#1:0'); end
-    assert_raise Orientdb4r::ConnectionError do @client.export; end
   end
 
 

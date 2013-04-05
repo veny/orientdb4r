@@ -5,7 +5,7 @@ module Orientdb4r
 
 
     before [:query, :command], :assert_connected
-    before [:create_class, :get_class, :drop_class, :create_property], :assert_connected
+    before [:create_class, :get_class, :class_exists?, :drop_class, :create_property], :assert_connected
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
 
@@ -257,6 +257,12 @@ module Orientdb4r
       end
 
       filename
+    end
+
+
+    def import(options=nil) #:nodoc:
+      params = {:method => :post, :uri => 'import/'}
+      response = call_server params
     end
 
 
