@@ -99,7 +99,7 @@ module Orientdb4r
         raise ConnectionError
       end
       rslt = process_response response
-      decorate_classes_with_model(rslt['classes'])
+      decorate_classes_with_model(rslt['classes']) unless rslt['classes'].nil? # no metadata in connect: https://groups.google.com/forum/?fromgroups=#!topic/orient-database/R0VoOfIyDng
 
       # try to read server version
       if rslt.include? 'server'
@@ -261,8 +261,9 @@ module Orientdb4r
 
 
     def import(options=nil) #:nodoc:
-      params = {:method => :post, :uri => 'import/'}
-      response = call_server params
+      raise NotImplementedError, 'not working via REST API, see here for more info: https://github.com/nuvolabase/orientdb/issues/1345'
+#      params = {:method => :post, :uri => 'import/'}
+#      response = call_server params
     end
 
 
