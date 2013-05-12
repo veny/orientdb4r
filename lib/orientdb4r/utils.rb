@@ -59,8 +59,13 @@ module Orientdb4r
       firstv = /^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/.match(first)[0]
       secondv = /^(?:(\d+)\.)?(?:(\d+)\.)?(\*|\d+)/.match(second)[0]
 
-      return 0 if firstv == secondv
-      return firstv > secondv ? 1 : -1
+      rslt = 0
+      rslt = 1 if firstv > secondv
+      rslt = -1 if firstv < secondv
+
+      yield rslt if block_given?
+
+      rslt
     end
 
     class Proxy

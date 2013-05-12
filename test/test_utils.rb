@@ -54,6 +54,15 @@ class TestUtils < Test::Unit::TestCase
     assert_equal -1, compare_versions('1.0.0', '1.0.1')
     assert_equal -1, compare_versions('1.0.0', '1.1.0')
     assert_equal -1, compare_versions('1.0.0', '2.0.0')
+
+    # test block
+    tmp = -100;
+    compare_versions('1.0.0', '1.0.0') { |comp| tmp = comp }
+    assert_equal 0, tmp
+    compare_versions('1.0.0', '2.0.0') { |comp| tmp = comp }
+    assert_equal -1, tmp
+    compare_versions('3.0.0', '2.0.0') { |comp| tmp = comp }
+    assert_equal 1, tmp
   end
 
 end
