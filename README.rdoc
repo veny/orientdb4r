@@ -91,6 +91,7 @@ In order to run the tests:
 * root account with username=root and password=root
 * type following
 
+
   cd /path/to/repository
   rake db:setup4test  # to create the temp DB which doesn't seem to be a default since v1.5
   rake test
