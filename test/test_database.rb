@@ -5,6 +5,7 @@ require 'orientdb4r'
 # This class tests DB management.
 class TestDatabase < Test::Unit::TestCase
 
+  DB = 'temp'
   Orientdb4r::logger.level = Logger::DEBUG
 
   def setup
@@ -14,34 +15,32 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # CONNECT
   def test_connect
-    assert_nothing_thrown do @client.connect :database => 'temp', :user => 'admin', :password => 'admin'; end
-    rslt = @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
-    assert_instance_of Hash, rslt
-    assert rslt.size > 0
-    assert rslt.include? 'classes'
+    assert_nothing_thrown do @client.connect :database => DB, :user => 'admin', :password => 'admin'; end
+    rslt = @client.connect :database => DB, :user => 'admin', :password => 'admin'
+    assert_instance_of TrueClass, rslt
 
     assert_equal 'admin', @client.user
     assert_equal 'admin', @client.password
-    assert_equal 'temp', @client.database
-    assert_not_nil @client.server_version
+    assert_equal DB, @client.database
 
     # connection refused
     client = Orientdb4r.client :port => 2840, :instance => :new
     assert_raise Orientdb4r::ConnectionError do
-      client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+      client.connect :database => DB, :user => 'admin', :password => 'admin'
     end
 
     # bad DB name
     assert_raise Orientdb4r::UnauthorizedError do
       @client.connect :database => 'unknown_db', :user => 'admin', :password => 'admin'
     end
-    # bad DB name with '/' => wrong REST resource
-    assert_raise Orientdb4r::ServerError do
-      @client.connect :database => 'temp/temp', :user => 'admin', :password => 'admin'
-    end
+    # !!! curl -v --user admin:adminX http://localhost:2480/connect/foo/bar
+#    # bad DB name with '/' => wrong REST resource
+#    assert_raise Orientdb4r::ServerError do
+#      @client.connect :database => 'temp/temp', :user => 'admin', :password => 'admin'
+#    end
     # bad credentials
     assert_raise Orientdb4r::UnauthorizedError do
-      @client.connect :database => 'temp', :user => 'admin1', :password => 'admin'
+      @client.connect :database => DB, :user => 'admin1', :password => 'admin'
     end
 
     # clean up
@@ -52,7 +51,7 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # DISCONNECT
   def test_disconnect
-    @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    @client.connect :database => DB, :user => 'admin', :password => 'admin'
     assert @client.connected?
     assert_nothing_thrown do @client.disconnect; end
     assert !@client.connected?
@@ -62,14 +61,12 @@ class TestDatabase < Test::Unit::TestCase
     assert_nil @client.user
     assert_nil @client.password
     assert_nil @client.database
-    assert_nil @client.server_version
   end
 
 
   ###
   # CREATE DATABASE
-  # Temporary disabled because of dependency to password of 'root' account
-  def xtest_create_database
+  def test_create_database
     assert_nothing_thrown do
       @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     end
@@ -81,7 +78,7 @@ class TestDatabase < Test::Unit::TestCase
       @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     end
     # insufficient rights
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::UnauthorizedError do
       @client.create_database :database => 'UniT1', :user => 'admin', :password => 'admin'
     end
 
@@ -98,16 +95,25 @@ class TestDatabase < Test::Unit::TestCase
   # GET DATABASE
   def test_get_database
     # not connected - allowed with additional authentication
-    assert_nothing_thrown do @client.get_database :database => 'temp', :user => 'admin', :password => 'admin' ; end
+    assert_nothing_thrown do @client.get_database :database => DB, :user => 'admin', :password => 'admin' ; end
     assert_raise Orientdb4r::ConnectionError do @client.get_database; end
     # connected
-    @client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    @client.connect :database => DB, :user => 'admin', :password => 'admin'
     assert_nothing_thrown do @client.get_database; end # gets info about connected DB
 
     rslt = @client.get_database
     assert_not_nil rslt
     assert_instance_of Hash, rslt
+    assert !rslt.empty?
+    # server
+    assert rslt.include? 'server'
+    assert_instance_of Hash, rslt['server']
+    assert !rslt['server'].empty?
+    assert rslt['server'].include? 'version'
+    # classes
     assert rslt.include? 'classes'
+    assert_instance_of Array, rslt['classes']
+    assert !rslt['classes'].empty?
 
     # bad databases
     assert_raise Orientdb4r::UnauthorizedError do @client.get_database :database => 'UnknownDB'; end
@@ -115,8 +121,8 @@ class TestDatabase < Test::Unit::TestCase
 
 
     # database_exists?
-    assert @client.database_exists?(:database => 'temp', :user => 'admin', :password => 'admin')
-    assert @client.database_exists?(:database => 'temp') # use credentials of logged in user
+    assert @client.database_exists?(:database => DB, :user => 'admin', :password => 'admin')
+    assert @client.database_exists?(:database => DB) # use credentials of logged in user
     assert !@client.database_exists?(:database => 'UnknownDB')
     assert !@client.database_exists?(:database => 'temp/admin')
   end
@@ -124,8 +130,7 @@ class TestDatabase < Test::Unit::TestCase
 
   ###
   # DELETE DATABASE
-  # Temporary disabled because of dependency to password of 'root' account
-  def xtest_delete_database
+  def test_delete_database
     @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
 
     # deleting non-existing DB
@@ -133,7 +138,7 @@ class TestDatabase < Test::Unit::TestCase
       @client.delete_database :database => 'UniT1', :user => 'root', :password => 'root'
     end
     # insufficient rights
-    assert_raise Orientdb4r::OrientdbError do
+    assert_raise Orientdb4r::UnauthorizedError do
       @client.delete_database :database => 'UniT', :user => 'admin', :password => 'admin'
     end
 
@@ -145,7 +150,6 @@ class TestDatabase < Test::Unit::TestCase
 
   ###
   # SERVER info
-  # Temporary disabled because of dependency to password of 'root' account
   def xtest_server
     # admin/admin has not 'server.info' resource access in standard installation
     assert_raise Orientdb4r::OrientdbError do @client.server :user => 'admin', :password => 'admin'; end
@@ -162,11 +166,11 @@ class TestDatabase < Test::Unit::TestCase
   # GET List Databases
   # Retrieves the available databases.
   def test_list_databases
-    dbs = @client.list_databases
+    dbs = @client.list_databases :user => 'root', :password => 'root'
     assert_not_nil dbs
     assert_instance_of Array, dbs
     assert !dbs.empty?
-    assert dbs.include? 'temp'
+    assert dbs.include? DB
   end
 
 
@@ -192,7 +196,7 @@ class TestDatabase < Test::Unit::TestCase
   def test_session_id
     client = Orientdb4r.client :instance => :new
     assert_nil client.nodes[0].session_id
-    client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    client.connect :database => DB, :user => 'admin', :password => 'admin'
     session_id = client.nodes[0].session_id
     assert_not_nil session_id
     client.query 'SELECT count(*) FROM OUser'
@@ -210,7 +214,7 @@ class TestDatabase < Test::Unit::TestCase
     client = Orientdb4r.client :instance => :new
 
     # export of connected database
-    client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+    client.connect :database => DB, :user => 'admin', :password => 'admin'
     rslt = client.export
     assert File.exist? './temp.gz'
     assert File.file? './temp.gz'
@@ -227,7 +231,7 @@ class TestDatabase < Test::Unit::TestCase
     # explicit given DB
     client.disconnect
     assert_nothing_thrown do
-      client.export :database => 'temp', :user => 'admin', :password => 'admin', :file => given_filename
+      client.export :database => DB, :user => 'admin', :password => 'admin', :file => given_filename
     end
     # unknow DB
     assert_raise Orientdb4r::UnauthorizedError do
@@ -235,7 +239,7 @@ class TestDatabase < Test::Unit::TestCase
     end
     # bad password
     assert_raise Orientdb4r::UnauthorizedError do
-      client.export :database => 'temp', :user => 'admin', :password => 'unknown'
+      client.export :database => DB, :user => 'admin', :password => 'unknown'
     end
   end
 

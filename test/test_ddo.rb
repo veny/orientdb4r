@@ -109,8 +109,9 @@ class TestDdo < Test::Unit::TestCase
     assert_nothing_thrown do @client.drop_class(CLASS); end
     assert_raise Orientdb4r::NotFoundError do @client.get_class(CLASS); end # no info more
     # the class is not visible in class list delivered by connect
-    rslt = @client.connect :database => DB, :user => 'admin', :password => 'admin'
-    assert rslt['classes'].select { |i| i.name == CLASS }.empty?
+    db_info = @client.get_database
+puts db_info['classes'].class
+    assert db_info['classes'].select { |i| i.name == CLASS }.empty?
 
     # CLASS extends super_class
     @client.create_class(CLASS, :extends => super_clazz);

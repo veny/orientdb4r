@@ -1,4 +1,11 @@
-= orientdb4r - Ruby binding for Orient DB
+
+              _            _      _ _     _  _
+    ___  _ __(_) ___ _ __ | |_ __| | |__ | || |  _ __
+   / _ \| '__| |/ _ \ '_ \| __/ _` | '_ \| || |_| '__|
+  | (_) | |  | |  __/ | | | || (_| | |_) |__   _| |
+   \___/|_|  |_|\___|_| |_|\__\__,_|_.__/   |_| |_|
+
+= Ruby binding for Orient DB
 
 A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.org).
 
@@ -17,6 +24,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   => true
 
   client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+  => true
 
   unless client.class_exists? CLASS
     client.create_class(CLASS) do |c|
@@ -73,18 +81,18 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 == REQUIREMENTS
 
 Tested on
-* Ruby 1.9.3
-* OrientDB 1.0.0
-* OrientDB 1.0.1
-* OrientDB 1.1.0-SNAPSHOT r5913+
+* Ruby 1.9.3+
+* OrientDB 1.0.0+
 
 == TESTS
-In order to run the tests you only need to:
 
+In order to run the tests:
+* you need running database server on localhost:2480
+* root account with username=root and password=root
+* type following
   cd /path/to/repository
+  rake db:setup4test # to create the temp DB which doesn't seem to be a default since v1.5
   rake test
-
-Start an instance of OrientDB (on localhost with default web port 2480 and 'admin/admin' account) before running.
 
 == AUTHOR
 

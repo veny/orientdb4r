@@ -88,33 +88,24 @@ module Orientdb4r
 
       @nodes.each { |node| node.cleanup } # destroy all used session <= problem in 1.3.0-SNAPSHOT
       begin
-        response = call_server(:method => :get, :uri => "connect/#{@database}")
+        http_response = call_server(:method => :get, :uri => "connect/#{@database}")
       rescue
         @connected = false
-        @server_version = nil
         @user = nil
         @password = nil
         @database = nil
         @nodes.each { |node| node.cleanup }
         raise ConnectionError
       end
-      rslt = process_response response
-      decorate_classes_with_model(rslt['classes']) unless rslt['classes'].nil? # no metadata in connect: https://groups.google.com/forum/?fromgroups=#!topic/orient-database/R0VoOfIyDng
 
-      # try to read server version
-      if rslt.include? 'server'
-        @server_version = rslt['server']['version']
-      else
-        @server_version = DEFAULT_SERVER_VERSION
-      end
-      unless server_version =~ SERVER_VERSION_PATTERN
-        Orientdb4r::logger.warn "bad version format, version=#{server_version}"
-        @server_version = DEFAULT_SERVER_VERSION
-      end
+      rslt = process_response http_response
+      # no metadata in connect v1.4.0+
+      # https://groups.google.com/forum/?fromgroups=#!topic/orient-database/R0VoOfIyDng
+      #decorate_classes_with_model(rslt['classes']) unless rslt['classes'].nil?
 
-      Orientdb4r::logger.info "successfully connected to server, version=#{server_version}"
+      Orientdb4r::logger.info "successfully connected to server, code=#{rslt.code}"
       @connected = true
-      rslt
+      @connected
     end
 
 
@@ -128,7 +119,6 @@ module Orientdb4r
         # It always returns 401 because some browsers intercept this and avoid to reuse the same session again.
       ensure
         @connected = false
-        @server_version = nil
         @user = nil
         @password = nil
         @database = nil
@@ -198,7 +188,9 @@ module Orientdb4r
       response = call_server params
 
       # NotFoundError cannot be raised - no way how to recognize from 401 bad auth
-      process_response(response)
+      rslt = process_response response
+      decorate_classes_with_model(rslt['classes']) unless rslt['classes'].nil?
+      rslt
     end
 
 
@@ -220,8 +212,16 @@ module Orientdb4r
     end
 
 
-    def list_databases #:nodoc:
-      response = call_server :method => :get, :uri => 'listDatabases', :no_session => true
+    #> curl --user root:root http://localhost:2480/listDatabases
+    def list_databases(options=nil) #:nodoc:
+      verify_and_sanitize_options(options, { :user => :optional, :password => :optional })
+
+      params = { :method => :get, :uri => 'listDatabases', :no_session => true }
+      # additional authentication allowed, overriden in 'call_server' if not defined
+      params[:user] = options[:user] if options.include? :user
+      params[:password] = options[:password] if options.include? :password
+
+      response = call_server params
       rslt = process_response(response)
       rslt['databases']
     end
@@ -302,25 +302,12 @@ module Orientdb4r
     def get_class(name) #:nodoc:
       raise ArgumentError, "class name is blank" if blank?(name)
 
-      if compare_versions(server_version, '1.1.0') >= 0
-        response = call_server(:method => :get, :uri => "class/#{@database}/#{name}")
-        rslt = process_response(response) do
-          raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
-        end
-
-        classes = [rslt]
-      else
-        # there is bug in REST API [v1.0.0, fixed in r5902], only data are returned
-        # workaround - use metadate delivered by 'connect'
-        response = call_server(:method => :get, :uri => "connect/#{@database}")
-        connect_info = process_response(response) do
-          raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
-        end
-
-        classes = connect_info['classes'].select { |i| i['name'] == name }
-        raise NotFoundError, "class not found, name=#{name}" unless 1 == classes.size
+      response = call_server(:method => :get, :uri => "class/#{@database}/#{name}")
+      rslt = process_response(response) do
+        raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
       end
 
+      classes = [rslt]
       decorate_classes_with_model(classes)
       clazz = classes[0]
       clazz.extend Orientdb4r::HashExtension
@@ -339,13 +326,15 @@ module Orientdb4r
     # ----------------------------------------------------------------- DOCUMENT
 
     def create_document(doc) #:nodoc:
-      response = call_server(:method => :post, :uri => "document/#{@database}", \
+      http_response = call_server(:method => :post, :uri => "document/#{@database}", \
           :content_type => 'application/json', :data => doc.to_json)
-      srid = process_response(response)  do
-        raise DataError, 'validation problem' if response.body =~ /OValidationException/
+      resp = process_response(http_response) do
+        raise DataError, 'validation problem' if http_response.body =~ /OValidationException/
       end
 
-      Rid.new srid
+      resp = ::JSON.parse(http_response.body) # workaround: https://groups.google.com/forum/?fromgroups=#!topic/orient-database/UJGAXYpHDmo
+      resp.extend Orientdb4r::DocumentMetadata
+      resp
     end
 
 

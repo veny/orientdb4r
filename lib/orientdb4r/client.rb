@@ -3,16 +3,11 @@ module Orientdb4r
   class Client
     include Utils
 
-    # Server version used if no concrete version identified.
-    DEFAULT_SERVER_VERSION = '1.0.0--'
-
-    # # Regexp to validate format of providet version.
+    # # Regexp to validate format of provided version.
     SERVER_VERSION_PATTERN = /^\d+\.\d+\.\d+[-SNAPHOT]*$/
 
     # connection parameters
     attr_reader :user, :password, :database
-    # version loaded from server
-    attr_reader :server_version
     # type of connection library [:restclient, :excon]
     attr_reader :connection_library
     # type of load balancing [:sequence, :round_robin]
@@ -112,7 +107,7 @@ module Orientdb4r
     # Retrieves the available databases.
     # That is protected by the resource "server.listDatabases"
     # that by default is assigned to the guest (anonymous) user in orientdb-server-config.xml.
-    def list_databases
+    def list_databases(options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
 
@@ -162,15 +157,7 @@ module Orientdb4r
       sql = "CREATE CLASS #{name}"
       sql << " EXTENDS #{options[:extends]}" if options.include? :extends
       sql << " CLUSTER #{options[:cluster]}" if options.include? :cluster
-      # abstract (TODO should be block)
-      bigger_1_2 = (compare_versions(server_version, '1.2.0') > 0)
-      if options.include?(:abstract)
-        if bigger_1_2
-          sql << ' ABSTRACT'
-        else
-          Orientdb4r::logger.warn("abstract class not supported in OrientDB version #{compare_versions}")
-        end
-      end
+      sql << ' ABSTRACT' if options.include?(:abstract)
 
       drop_class name if options[:force]
 
@@ -228,15 +215,14 @@ module Orientdb4r
     ###
     # Removes a class from the schema.
     def drop_class(name, options={})
-      raise ArgumentError, "class name is blank" if blank?(name)
+      raise ArgumentError, 'class name is blank' if blank?(name)
 
       # :mode=>:strict forbids to drop a class that is a super class for other one
       opt_pattern = { :mode => :nil }
       verify_options(options, opt_pattern)
       if :strict == options[:mode]
-        response = call_server(:method => :get, :uri => "connect/#{@database}") # TODO there cannot be REST (in this client class)
-        connect_info = process_response response
-        children = connect_info['classes'].select { |i| i['superClass'] == name }
+        response = get_database
+        children = response['classes'].select { |i| i['superClass'] == name }
         unless children.empty?
           raise OrientdbError, "class is super-class, cannot be deleted, name=#{name}"
         end
@@ -280,7 +266,9 @@ module Orientdb4r
 
     ###
     # Create a new document.
-    # Returns the Record-id assigned.
+    # Returns the Record-id assigned for OrientDB version <= 1.3.x
+    # and the whole new document for version >= 1.4.x
+    # (see https://groups.google.com/forum/?fromgroups=#!topic/orient-database/UJGAXYpHDmo for more info).
     def create_document(doc)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
