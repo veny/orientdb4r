@@ -2,7 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.4.0',   '2013-08-16', "Closes gap between this driver and OrientDb v1.4.0+; Enh #17, Enh #20, BF #25"],
+    ['0.4.0',   '2013-08-14', "Closes gap between this driver and OrientDB v1.4.0+; Enh #20, BF #25"],
     ['0.3.3',   '2012-12-16', "Enh #18 ('abstract' option into creating a new class), Enh #19 (GET - List Databases)"],
     ['0.3.2',   '2012-11-02', "Enh #13 (User-Agent), Enh #16 (configurable Recover Time in Load Balancing)"],
     ['0.3.1',   '2012-08-27', "Timeout for reuse of dirty nodes in load balancing; BF #14, BF #15"],

@@ -16,14 +16,18 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
   require 'orientdb4r'
 
+  DB = 'foo'
   CLASS = 'myclass'
 
   client = Orientdb4r.client  # equivalent for :host => 'localhost', :port => 2480, :ssl => false
 
-  client.database_exists? :database => 'temp', :user => 'admin', :password => 'admin'
-  => true
+  client.database_exists? :database => DB, :user => 'admin', :password => 'admin'
+  => false
 
-  client.connect :database => 'temp', :user => 'admin', :password => 'admin'
+  client.create_database :database => DB, :type => :memory, :user => 'root', :password => 'root'
+  => false
+
+  client.connect :database => DB, :user => 'admin', :password => 'admin'
   => true
 
   unless client.class_exists? CLASS
@@ -61,7 +65,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
   client.drop_class CLASS
   client.disconnect
-
+  => ["401 Unauthorized: Logged out", 401]
 
 == INSTALL
 
@@ -87,14 +91,13 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 == TESTS
 
 
-  cd /path/to/repository
-  rake db:setup4test  # to create the temp DB which doesn't seem to be a default since v1.5
-  rake test
+  > cd /path/to/repository
+  > rake db:setup4test  # to create the temp DB which doesn't seem to be a default since v1.5
+  > rake test
 
-Before to run the tests:
-* you need running database server on localhost:2480
-* you need root account with username=root and password=root
-* type following
+Make sure before starting the tests:
+* database server is running on localhost:2480
+* there is a root account with username=root and password=root
 
 
 == AUTHOR
