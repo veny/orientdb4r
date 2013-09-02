@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Ruby binding for Orient DB.}
+  s.license = 'Apache License, v2.0'
 
   s.add_dependency(%q<rest-client>, ["~> 1.6.7"])
 #  s.add_development_dependency(%q<json>, ["~> 1.5.1"])
