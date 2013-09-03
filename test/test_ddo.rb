@@ -110,7 +110,6 @@ class TestDdo < Test::Unit::TestCase
     assert_raise Orientdb4r::NotFoundError do @client.get_class(CLASS); end # no info more
     # the class is not visible in class list delivered by connect
     db_info = @client.get_database
-puts db_info['classes'].class
     assert db_info['classes'].select { |i| i.name == CLASS }.empty?
 
     # CLASS extends super_class
@@ -163,7 +162,7 @@ puts db_info['classes'].class
     assert_nothing_thrown do
       @client.create_class(CLASS) do |c|
         c.property 'prop1', :integer
-        c.property 'prop2', :string, :mandatory => true, :notnull => true, :min => 1, :max => 99
+        c.property 'prop2', :string, :mandatory => true, :notnull => true, :readonly => true, :min => 1, :max => 99
         c.link     'user',  :linkset, 'OUser', :mandatory => true
       end
     end
@@ -175,6 +174,7 @@ puts db_info['classes'].class
     assert_equal 'INTEGER', prop1.type
     assert !prop1.mandatory
     assert !prop1.not_null
+    assert !prop1.read_only
     assert_nil prop1.min
     assert_nil prop1.max
     assert_nil prop1.linked_class
@@ -183,6 +183,7 @@ puts db_info['classes'].class
     assert_equal 'STRING', prop2.type
     assert prop2.mandatory
     assert prop2.not_null
+    assert prop2.read_only
     assert_equal '1', prop2.min
     assert_equal '99',  prop2.max
     assert_nil prop2.linked_class
@@ -191,6 +192,7 @@ puts db_info['classes'].class
     assert_equal 'LINKSET', user.type
     assert user.mandatory
     assert !user.not_null
+    assert !user.read_only
     assert_nil user.min
     assert_nil user.max
     assert_equal 'OUser', user.linked_class

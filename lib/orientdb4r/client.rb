@@ -243,7 +243,7 @@ module Orientdb4r
       raise ArgumentError, "property name is blank" if blank?(property)
       opt_pattern = {
         :mandatory => :optional , :notnull => :optional, :min => :optional, :max => :optional,
-        :regexp =>  :optional, :custom => :optional, :linked_class => :optional
+        :readonly =>  :optional, :linked_class => :optional
       }
       verify_options(options, opt_pattern)
 

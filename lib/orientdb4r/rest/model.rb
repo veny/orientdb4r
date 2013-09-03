@@ -99,6 +99,12 @@ module Orientdb4r
     end
 
     ###
+    # Gets the 'read-only' flag.
+    def read_only
+      get_mandatory_attribute :readonly
+    end
+
+    ###
     # Gets linked class if the property is a link.
     def linked_class
       self['linkedClass']
