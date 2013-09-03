@@ -67,6 +67,10 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # CREATE DATABASE
   def test_create_database
+    # bad options
+    assert_raise ArgumentError do @client.create_database(:database => 'UniT', :storage => :foo); end
+    assert_raise ArgumentError do @client.create_database(:database => 'UniT', :type => :foo); end
+
     assert_nothing_thrown do
       @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
     end
@@ -88,6 +92,12 @@ class TestDatabase < Test::Unit::TestCase
       @client.connect :database => 'UniT', :user => 'admin', :password => 'admin'
     end
     @client.delete_database({:database => 'UniT', :user => 'root', :password => 'root'})
+
+    # create non-default DB: storage=local;type=graph
+    assert_nothing_thrown do
+      @client.create_database :database => 'UniT', :user => 'root', :password => 'root', :storage => :local, :type => :graph
+      @client.delete_database :database => 'UniT', :user => 'root', :password => 'root'
+    end
   end
 
 

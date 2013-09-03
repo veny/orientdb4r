@@ -24,7 +24,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
   client.database_exists? :database => DB, :user => 'admin', :password => 'admin'
   => false
 
-  client.create_database :database => DB, :type => :memory, :user => 'root', :password => 'root'
+  client.create_database :database => DB, :storage => :memory, :user => 'root', :password => 'root'
   => false
 
   client.connect :database => DB, :user => 'admin', :password => 'admin'

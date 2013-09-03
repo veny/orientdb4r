@@ -68,6 +68,9 @@ module Orientdb4r
     # Creates a new database.
     # You can provide an additional authentication to the server with 'database.create' resource
     # or the current one will be used.
+    # *options
+    #   *storage - 'memory' (by default) or 'local'
+    #   *type - 'document' (by default) or 'graph'
     def create_database(options)
       raise NotImplementedError, 'this should be overridden by concrete client'
     end
