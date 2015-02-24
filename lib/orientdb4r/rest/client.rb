@@ -152,7 +152,7 @@ module Orientdb4r
         :user => :optional, :password => :optional
       }
       verify_and_sanitize_options(options, options_pattern)
-      verify_options(options.select {|k,v| k === :storage or k === :type}, {:storage => [:memory, :local], :type => [:document, :graph]})
+      verify_options(options.select {|k,v| k === :storage or k === :type}, {:storage => [:memory, :plocal], :type => [:document, :graph]})
 
       params = { :method => :post, :uri => "database/#{options[:database]}/#{options[:storage].to_s}/#{options[:type].to_s}" }
       params[:no_session] = true # out of existing session which represents an already done authentication
