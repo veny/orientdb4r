@@ -37,6 +37,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_not_nil doc.doc_rid
     assert_instance_of Orientdb4r::Rid, doc.doc_rid
     assert_equal CLASS, doc.doc_class
+
+    # FAIL: https://github.com/orientechnologies/orientdb/issues/3656
     assert_equal 0, doc.doc_version
 
     # no effect if a define the version
@@ -73,6 +75,8 @@ class TestDocumentCrud < Test::Unit::TestCase
     doc = @client.get_document created.doc_rid
     assert_equal CLASS, doc.doc_class
     assert_equal created.doc_rid, doc.doc_rid
+
+    # FAIL: https://github.com/orientechnologies/orientdb/issues/3657
     assert_equal 0, doc.doc_version
     assert_equal 'd', doc.doc_type
     assert_equal 1, doc['prop1']
