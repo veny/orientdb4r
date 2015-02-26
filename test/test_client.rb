@@ -1,15 +1,10 @@
-require 'test/unit'
-$: << File.expand_path(File.join(File.dirname(__FILE__), "..", "lib"))
-require 'orientdb4r'
+require 'test_helper'
 
 ###
 # This class tests communication with OrientDB cluster and load balancing.
 class TestClient < Test::Unit::TestCase
 
-  Orientdb4r::logger.level = Logger::DEBUG
-
   PROXY_URL = 'http://bad.domain.com'
-
 
   ###
   # Test inintialization of single node.

@@ -1,6 +1,4 @@
-require 'test/unit'
-$: << File.expand_path(File.join(File.dirname(__FILE__), "..", "lib"))
-require 'orientdb4r'
+require 'test_helper'
 
 ###
 # This class tests CRUD operarions on document.
@@ -9,8 +7,6 @@ class TestDocumentCrud < Test::Unit::TestCase
 
   CLASS = 'testing'
   DB = 'temp'
-  Orientdb4r::logger.level = Logger::DEBUG
-
 
   def setup
     @client = Orientdb4r.client
