@@ -18,6 +18,11 @@ module Orientdb4r
       opts[:url] = "#{url}/#{opts[:uri]}"
       opts.delete :uri
 
+      if content_type = opts.delete(:content_type)
+        opts[:headers] ||= {}
+        opts[:headers][:content_type] = content_type
+      end
+
       # data
       data = opts.delete :data
       data = '' if data.nil? and :post == opts[:method] # POST has to have data
