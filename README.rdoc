@@ -92,8 +92,8 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
 
   > cd /path/to/repository
-  > rake db:setup4test  # to create the temp DB which doesn't seem to be a default since v1.5
-  > rake test
+  > bundle exec rake db:setup4test  # to create the temp DB which doesn't seem to be a default since v1.5
+  > bundle exec rake test
 
 Make sure before starting the tests:
 * database server is running on localhost:2480
