@@ -12,6 +12,9 @@ test/tmp
 test/version_tmp
 tmp
 
+orientdb4r.sublime-project
+orientdb4r.sublime-workspace
+
 # YARD artifacts
 .yardoc
 _yardoc
