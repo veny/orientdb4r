@@ -96,7 +96,7 @@ class TestDatabase < Test::Unit::TestCase
 
     # create non-default DB: storage=local;type=graph
     assert_nothing_thrown do
-      @client.create_database :database => 'UniT', :user => 'root', :password => 'root', :storage => :local, :type => :graph
+      @client.create_database :database => 'UniT', :user => 'root', :password => 'root', :storage => :plocal, :type => :graph
       @client.delete_database :database => 'UniT', :user => 'root', :password => 'root'
     end
   end

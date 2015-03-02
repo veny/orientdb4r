@@ -37,11 +37,14 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_not_nil doc.doc_rid
     assert_instance_of Orientdb4r::Rid, doc.doc_rid
     assert_equal CLASS, doc.doc_class
-    assert_equal 0, doc.doc_version
+
+    # https://github.com/orientechnologies/orientdb/issues/3656
+    assert doc.doc_version >= 1
 
     # no effect if a define the version
-    doc = @client.create_document({ '@class' => CLASS, '@version' => 2, 'prop1' => 1, 'prop2' => 'text' })
-    assert_equal 0, doc.doc_version
+    # doc = @client.create_document({ '@class' => CLASS, '@version' => 2, 'prop1' => 1, 'prop2' => 'text' })
+    # OrientDB bug https://github.com/orientechnologies/orientdb/issues/3657
+    # assert_equal 0, doc.doc_version
 
     # no effect if an unknown class
     doc = @client.create_document({ '@class' => 'unknown_class', 'a' => 11, 'b' => 'text1' })
@@ -73,7 +76,9 @@ class TestDocumentCrud < Test::Unit::TestCase
     doc = @client.get_document created.doc_rid
     assert_equal CLASS, doc.doc_class
     assert_equal created.doc_rid, doc.doc_rid
-    assert_equal 0, doc.doc_version
+
+    # https://github.com/orientechnologies/orientdb/issues/3657
+    assert doc.doc_version >= 1
     assert_equal 'd', doc.doc_type
     assert_equal 1, doc['prop1']
     assert_equal 'text', doc['prop2']
