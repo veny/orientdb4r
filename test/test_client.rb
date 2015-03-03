@@ -86,6 +86,23 @@ class TestClient < Test::Unit::TestCase
       end
     end
   end
+end
 
+class TestClientUseJson < Test::Unit::TestCase
+  def setup
+    @client = Orientdb4r.client
+    @client.connect database: 'temp', user: 'admin', password: 'admin'
+    @client.create_class('test_client_uses_json')
+  end
 
+  def teardown
+    @client.drop_class('test_client_uses_json')
+  end
+
+  def test_content_type_is_json
+    doc = @client.create_document('@class' => 'test_client_uses_json', 'name' => '+')
+
+    # with nothing specified, rest-client url encodes payload, so "+" becomes " "
+    assert_equal '+', doc['name']
+  end
 end
