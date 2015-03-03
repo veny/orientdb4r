@@ -87,6 +87,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 * Ruby 1.9.x+
 * OrientDB 1.0.x-1.3.x for *v0.3.x*
 * OrientDB 1.4.0+ for *v0.4.x*
+* OrientDB 1.6.0+ for *v0.5.x*
 
 == TESTS
 

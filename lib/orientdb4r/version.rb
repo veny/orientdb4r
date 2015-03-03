@@ -2,10 +2,11 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.4.1',   '2013-09-03', "Enh #24 (read-only property), #26 (type of new database), #27 (license in gemspec)"],
+    ['0.5.0',   '2015-03-03', "Compatible with OrientDB v2.x, PR #31, PR #32, PR #33"],
+    ['0.4.1',   '2013-09-03', "Enh #24, Enh #26, Enh #27"],
     ['0.4.0',   '2013-08-14', "Closed gap between this driver and OrientDB v1.4.0+; Enh #20, BF #25"],
-    ['0.3.3',   '2012-12-16', "Enh #18 ('abstract' option into creating a new class), Enh #19 (GET - List Databases)"],
-    ['0.3.2',   '2012-11-02', "Enh #13 (User-Agent), Enh #16 (configurable Recover Time in Load Balancing)"],
+    ['0.3.3',   '2012-12-16', "Enh #18, Enh #19"],
+    ['0.3.2',   '2012-11-02', "Enh #13, Enh #16"],
     ['0.3.1',   '2012-08-27', "Timeout for reuse of dirty nodes in load balancing; BF #14, BF #15"],
     ['0.3.0',   '2012-08-01', "Added support for cluster of distributed servers + load balancing"],
     ['0.2.10',  '2012-07-21', "Experimental support for Excon HTTP library with Keep-Alive connection"],
