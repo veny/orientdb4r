@@ -1,6 +1,6 @@
 0.5.0 2015-03-02
-- Provides fixes to be fully compatible with OrientDb v2.x
-- No more backward compatible with OrientDb v1.5.x and lesser.
+- Provides fixes to be fully compatible with OrientDb v2.x.
+- No more backward compatible with OrientDb v1.5.x and lesser
 - Pull Request #31 : rest-client 1.6.7 => 1.7.x
 - Pull Request #32 : Add Gemfile & rake as a dev dependency
 - Pull Request #33 : Fix content type header for rest-client
@@ -14,7 +14,7 @@
 
 0.4.0 2013-08-14
 - Closes gap between this driver and OrientDb v1.4.0+ which introduced some changes on REST API (connect & create_document).
-- No more backward compatible with OrientDb v1.3.x and lesser.
+- No more backward compatible with OrientDb v1.3.x and lesser
 - Enhancement #20 : Method 'compare_versions' accepts a block now
 - Bug Fix #25
 
