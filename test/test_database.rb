@@ -13,6 +13,12 @@ class TestDatabase < Test::Unit::TestCase
     @client = Orientdb4r.client
   end
 
+  def teardown
+    if @client.database_exists? :database => 'UniT', :user => 'root', :password => 'root'
+      @client.delete_database :database => 'UniT', :user => 'root', :password => 'root'
+    end
+  end
+
   ###
   # CONNECT
   def test_connect
