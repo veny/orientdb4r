@@ -1,8 +1,6 @@
 require 'test/unit'
 $: << File.expand_path(File.join(File.dirname(__FILE__), "..", "lib"))
 require 'orientdb4r'
-require 'coveralls'
-Coveralls.wear!
 
 ###
 # This class tests communication with OrientDB cluster and load balancing.
