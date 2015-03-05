@@ -2,13 +2,12 @@
 
 PARENT_DIR=$(dirname $(cd "$(dirname "$0")"; pwd))
 CI_DIR="$PARENT_DIR/ci/environment"
-
 #CI_DIR=/tmp/travis
-#exit
 
 ODB_VERSION=${1:-"2.0.4"}
 ODB_DIR="${CI_DIR}/orientdb-community-${ODB_VERSION}"
 ODB_LAUNCHER="${ODB_DIR}/bin/server.sh"
+
 
 
 echo "=== Initializing CI environment ==="
@@ -28,9 +27,9 @@ sed "s:^[ \t]*<users.*$:    $ODB_ADMIN:" -i ${ODB_DIR}/config/orientdb-server-co
 sed "s:^[ \t]*<\/users.*$:    <!-- \/users -->:" -i ${ODB_DIR}/config/orientdb-server-config.xml
 sed "s:^handlers = .*$:handlers = java.util.logging.ConsoleHandler:" -i ${ODB_DIR}/config/orientdb-server-log.properties
 
-echo "--- Starting an instance of OrientDB ---"
+echo "--- Starting server ---------------"
 sh -c $ODB_LAUNCHER </dev/null &>/dev/null &
 
 # Wait a bit for OrientDB to finish the initialization phase.
 sleep 5
-printf "\n=== The CI environment has been initialized ===\n"
+printf "=== The CI environment has been initialized ===\n"
