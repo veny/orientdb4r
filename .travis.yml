@@ -1,0 +1,12 @@
+language: ruby
+rvm:
+  - 2.2.0
+
+before_install:
+
+notifications:
+  email:
+    recipients:
+      - vaclav.sykora@gmail.com
+    on_success: change
+    on_failure: change
