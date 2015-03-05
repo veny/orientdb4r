@@ -3,11 +3,12 @@ rvm:
   - 2.2.0
 
 before_script:
+  - chmod +x ./ci/initialize-ci.sh
   - ./ci/initialize-ci.sh $ORIENTDB_VERSION
   - bundle exec rake db:setup4test
 
 env:
-  - ORIENTDB_VERSION=2.0.3
+  - ORIENTDB_VERSION=2.0.4
 
 notifications:
   email:
