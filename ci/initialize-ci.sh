@@ -13,6 +13,7 @@ ODB_LAUNCHER="${ODB_DIR}/bin/server.sh"
 
 echo "=== Initializing CI environment ==="
 echo $(which java)
+echo $(which wget)
 
 cd "$PARENT_DIR"
 
