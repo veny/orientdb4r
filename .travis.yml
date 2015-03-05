@@ -2,8 +2,9 @@ language: ruby
 rvm:
   - 2.2.0
 
-after_install:
-  - "bundle exec rake db:setup4test"
+before_script:
+  - echo "MY =====XXXXXXXXXXXXXX===== MY"
+  - bundle exec rake db:setup4test
 
 notifications:
   email:
