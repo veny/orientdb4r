@@ -12,10 +12,11 @@ ODB_LAUNCHER="${ODB_DIR}/bin/server.sh"
 
 echo "=== Initializing CI environment ==="
 cd "$PARENT_DIR"
+mkdir -p $CI_DIR
 
 echo "--- Downloading OrientDB v${ODB_VERSION} ---"
-mkdir -p $CI_DIR
 wget -q -O "$CI_DIR/orientdb-community-${ODB_VERSION}.tar.gz" "http://www.orientechnologies.com/download.php?email=unknown@unknown.com&file=orientdb-community-${ODB_VERSION}.tar.gz&os=linux"
+
 echo "--- Unpacking ---------------------"
 tar xf $CI_DIR/orientdb-community-${ODB_VERSION}.tar.gz -C $CI_DIR
 

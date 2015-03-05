@@ -1,5 +1,7 @@
 source "https://rubygems.org"
-
-gem 'test-unit',  '>=3.0'
-
 gemspec
+
+group :test do
+  gem 'test-unit',  '>=3.0'
+  gem 'coveralls', require: false
+end
