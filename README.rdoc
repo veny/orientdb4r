@@ -10,6 +10,7 @@
 A Ruby client for the NoSQL Graph/Document database Orient DB (http://orientdb.org).
 
 {<img src="https://badge.fury.io/rb/orientdb4r.svg" alt="Gem Version" />}[http://badge.fury.io/rb/orientdb4r]
+{<img src="https://secure.travis-ci.org/veny/orientdb4r.png" alt="Build Status" />}[http://travis-ci.org/veny/orientdb4r]
 
 == USAGE
 
