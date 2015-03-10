@@ -102,7 +102,7 @@ see Wiki page for more sample at https://github.com/veny/orientdb4r/wiki
 
 Make sure before starting the tests:
 * database server is running on localhost:2480
-* there is a root account with username=root and password=root
+* there is a root account with username=root and password=root; if your password is different, specify it with an `ORIENTDB_ROOT_PASS` environment variable
 
 
 == AUTHOR
