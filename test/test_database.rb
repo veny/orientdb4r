@@ -11,8 +11,8 @@ class TestDatabase < Test::Unit::TestCase
   end
 
   def teardown
-    if @client.database_exists? :database => 'UniT', :user => 'root', :password => 'root'
-      @client.delete_database :database => 'UniT', :user => 'root', :password => 'root'
+    if @client.database_exists? :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
+      @client.delete_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
   end
 
@@ -76,14 +76,14 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise ArgumentError do @client.create_database(:database => 'UniT', :type => :foo); end
 
     assert_nothing_thrown do
-      @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+      @client.create_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
     assert_nothing_thrown do
       @client.get_database :database => 'UniT', :user => 'admin', :password => 'admin'
     end
     # creating an existing DB
     assert_raise Orientdb4r::ServerError do
-      @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+      @client.create_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
     # insufficient rights
     assert_raise Orientdb4r::UnauthorizedError do
@@ -95,12 +95,12 @@ class TestDatabase < Test::Unit::TestCase
     assert_nothing_thrown do
       @client.connect :database => 'UniT', :user => 'admin', :password => 'admin'
     end
-    @client.delete_database({:database => 'UniT', :user => 'root', :password => 'root'})
+    @client.delete_database({:database => 'UniT', :user => 'root', :password => DB_ROOT_PASS})
 
     # create non-default DB: storage=local;type=graph
     assert_nothing_thrown do
-      @client.create_database :database => 'UniT', :user => 'root', :password => 'root', :storage => :plocal, :type => :graph
-      @client.delete_database :database => 'UniT', :user => 'root', :password => 'root'
+      @client.create_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS, :storage => :plocal, :type => :graph
+      @client.delete_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
   end
 
@@ -145,11 +145,11 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # DELETE DATABASE
   def test_delete_database
-    @client.create_database :database => 'UniT', :user => 'root', :password => 'root'
+    @client.create_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
 
     # deleting non-existing DB
     assert_raise Orientdb4r::ServerError do
-      @client.delete_database :database => 'UniT1', :user => 'root', :password => 'root'
+      @client.delete_database :database => 'UniT1', :user => 'root', :password => DB_ROOT_PASS
     end
     # insufficient rights
     assert_raise Orientdb4r::UnauthorizedError do
@@ -157,7 +157,7 @@ class TestDatabase < Test::Unit::TestCase
     end
 
     assert_nothing_thrown do
-      @client.delete_database({:database => 'UniT', :user => 'root', :password => 'root'})
+      @client.delete_database({:database => 'UniT', :user => 'root', :password => DB_ROOT_PASS})
     end
   end
 
@@ -168,8 +168,8 @@ class TestDatabase < Test::Unit::TestCase
     # admin/admin has not 'server.info' resource access in standard installation
     assert_raise Orientdb4r::OrientdbError do @client.server :user => 'admin', :password => 'admin'; end
 
-    assert_nothing_thrown do @client.server :user => 'root', :password => 'root'; end
-    rslt = @client.server :user => 'root', :password => 'root'
+    assert_nothing_thrown do @client.server :user => 'root', :password => DB_ROOT_PASS; end
+    rslt = @client.server :user => 'root', :password => DB_ROOT_PASS
     assert_instance_of Hash, rslt
     assert rslt.include? 'connections'
     assert_not_nil rslt['connections']
@@ -180,7 +180,7 @@ class TestDatabase < Test::Unit::TestCase
   # GET List Databases
   # Retrieves the available databases.
   def test_list_databases
-    dbs = @client.list_databases :user => 'root', :password => 'root'
+    dbs = @client.list_databases :user => 'root', :password => DB_ROOT_PASS
     assert_not_nil dbs
     assert_instance_of Array, dbs
     assert !dbs.empty?
