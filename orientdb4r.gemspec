@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Ruby binding for Orient DB.}
   s.license = 'Apache License, v2.0'
 
-  s.add_dependency(%q<rest-client>, ["~> 1.7"])
+  s.add_dependency(%q<rest-client>, ["~> 1.6.7"])
 
   s.add_development_dependency "rake", "~> 10.3"
 #  s.add_development_dependency(%q<json>, ["~> 1.5.1"])
