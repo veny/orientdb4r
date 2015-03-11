@@ -14,7 +14,7 @@ namespace :db do
   DB_PORT = 2480
   DB_NAME = 'temp'
   DB_ROOT_USER = 'root'
-  DB_ROOT_PASS = 'root'
+  DB_ROOT_PASS = ENV['ORIENTDB_ROOT_PASS'] || 'root'
 
   desc 'Check whether a test DB exists and create if not'
   task :setup4test do
