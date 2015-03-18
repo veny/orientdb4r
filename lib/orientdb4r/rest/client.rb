@@ -290,6 +290,18 @@ module Orientdb4r
       rslt
     end
 
+    def gremlin(gremlin)
+      raise ArgumentError, 'gremlin query is blank' if blank? gremlin
+      response = call_server(:method => :post, :uri => "command/#{@database}/gremlin/#{CGI::escape(gremlin)}")
+      entries = process_response(response) do
+        raise NotFoundError, 'record not found' if response.body =~ /ORecordNotFoundException/
+      end
+
+      rslt = entries['result']
+      # mixin all document entries (they have '@class' attribute)
+      rslt.each { |doc| doc.extend Orientdb4r::DocumentMetadata unless doc['@class'].nil? }
+      rslt
+    end
 
     def command(sql) #:nodoc:
       raise ArgumentError, 'command is blank' if blank? sql
