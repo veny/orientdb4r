@@ -193,6 +193,7 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end
     assert_raise Orientdb4r::ConnectionError do @client.command "INSERT INTO OUser(name) VALUES('x')"; end
     assert_raise Orientdb4r::ConnectionError do @client.gremlin("g.addVertex('class:X', 'prop1', 1, 'prop2', 'string1')"); end
+    assert_raise Orientdb4r::ConnectionError do @client.batch({:transaction => true, :operations => []}); end
     #BF #21 assert_raise Orientdb4r::ConnectionError do @client.create_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.create_property 'x', 'prop', :boolean; end
     assert_raise Orientdb4r::ConnectionError do @client.class_exists? 'x'; end

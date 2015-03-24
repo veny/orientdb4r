@@ -4,7 +4,7 @@ module Orientdb4r
     include Aop2
 
 
-    before [:query, :command, :gremlin], :assert_connected
+    before [:query, :command, :gremlin, :batch], :assert_connected
     before [:create_class, :get_class, :class_exists?, :drop_class, :create_property], :assert_connected
     before [:create_document, :get_document, :update_document, :delete_document], :assert_connected
     around [:query, :command], :time_around
@@ -290,6 +290,8 @@ module Orientdb4r
       rslt
     end
 
+    ###
+    # Executes a Gremlin command against the database.
     def gremlin(gremlin)
       raise ArgumentError, 'gremlin query is blank' if blank? gremlin
       response = call_server(:method => :post, :uri => "command/#{@database}/gremlin/#{CGI::escape(gremlin)}")
@@ -307,6 +309,13 @@ module Orientdb4r
       raise ArgumentError, 'command is blank' if blank? sql
       response = call_server(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}")
       process_response(response)
+    end
+
+    ###
+    # Executes a batch of operations in a single call.
+    def batch(operations)
+      response = call_server(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}", \
+          :content_type => 'application/json', :data => operations.to_json)
     end
 
 
