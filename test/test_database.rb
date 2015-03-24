@@ -14,6 +14,7 @@ class TestDatabase < Test::Unit::TestCase
     if @client.database_exists? :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
       @client.delete_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
+    @client.disconnect
   end
 
   ###
@@ -46,9 +47,6 @@ class TestDatabase < Test::Unit::TestCase
     assert_raise Orientdb4r::UnauthorizedError do
       @client.connect :database => DB, :user => 'admin1', :password => 'admin'
     end
-
-    # clean up
-    @client.disconnect
   end
 
 
@@ -191,8 +189,10 @@ class TestDatabase < Test::Unit::TestCase
   ###
   # Test of :assert_connected before advice.
   def test_assert_connected
+    @client.disconnect if @client.connected? # to be sure it this method is called as first in this TestCase and thread local client is still connected
     assert_raise Orientdb4r::ConnectionError do @client.query 'SELECT FROM OUser'; end
-    assert_raise Orientdb4r::ConnectionError do @client.query "INSERT INTO OUser(name) VALUES('x')"; end
+    assert_raise Orientdb4r::ConnectionError do @client.command "INSERT INTO OUser(name) VALUES('x')"; end
+    assert_raise Orientdb4r::ConnectionError do @client.gremlin("g.addVertex('class:X', 'prop1', 1, 'prop2', 'string1')"); end
     #BF #21 assert_raise Orientdb4r::ConnectionError do @client.create_class 'x'; end
     assert_raise Orientdb4r::ConnectionError do @client.create_property 'x', 'prop', :boolean; end
     assert_raise Orientdb4r::ConnectionError do @client.class_exists? 'x'; end
