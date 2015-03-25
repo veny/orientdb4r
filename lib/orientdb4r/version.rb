@@ -2,7 +2,7 @@ module Orientdb4r
 
   # Version history.
   VERSION_HISTORY = [
-    ['0.5.1',   '2015-30-03', "Enh #39, PR #40"],
+#    ['0.5.1',   '2015-30-03', "Enh #39, PR #40"],
     ['0.5.0',   '2015-03-03', "Compatible with OrientDB v2.x, PR #31, PR #32, PR #33"],
     ['0.4.1',   '2013-09-03', "Enh #24, Enh #26, Enh #27"],
     ['0.4.0',   '2013-08-14', "Closed gap between this driver and OrientDB v1.4.0+; Enh #20, BF #25"],

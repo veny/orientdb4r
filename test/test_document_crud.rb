@@ -141,7 +141,7 @@ class TestDocumentCrud < Test::Unit::TestCase
 
   ###
   # BATCH
-  def test_delete_batch
+  def test_batch_ok
     doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
     assert_not_nil doc
 
