@@ -314,8 +314,9 @@ module Orientdb4r
     ###
     # Executes a batch of operations in a single call.
     def batch(operations)
-      response = call_server(:method => :post, :uri => "command/#{@database}/sql/#{CGI::escape(sql)}", \
+      response = call_server(:method => :post, :uri => "batch/#{@database}", \
           :content_type => 'application/json', :data => operations.to_json)
+      process_response(response)
     end
 
 

@@ -138,4 +138,18 @@ class TestDocumentCrud < Test::Unit::TestCase
     assert_raise ArgumentError do @client.delete_document 'xx'; end
   end
 
+
+  ###
+  # BATCH
+  def test_delete_batch
+    doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
+    assert_not_nil doc
+
+    rslt = @client.batch({:transaction => true, :operations => [
+      {:type => :c, :record => {'@class' => CLASS, :prop2 => 'foo'}},
+      {:type => :d, :record => {'@rid' => doc.doc_rid}},
+    ]})
+    assert_instance_of Hash, rslt
+  end
+
 end
