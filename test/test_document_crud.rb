@@ -139,17 +139,46 @@ class TestDocumentCrud < Test::Unit::TestCase
   end
 
 
-  ###
+  #######################
   # BATCH
+  #######################
+
   def test_batch_ok
     doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
-    assert_not_nil doc
-
     rslt = @client.batch({:transaction => true, :operations => [
       {:type => :c, :record => {'@class' => CLASS, :prop2 => 'foo'}},
-      {:type => :d, :record => {'@rid' => doc.doc_rid}},
+      {:type => :d, :record => {'@rid' => doc.doc_rid}}
     ]})
     assert_instance_of Hash, rslt
+    assert_equal 1, @client.query("SELECT count(*) FROM #{CLASS}")[0]['count']
+  end
+
+  def test_batch_bad_params
+    doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
+    assert_raise Orientdb4r::ServerError do @client.batch(nil); end
+    assert_raise Orientdb4r::ServerError do @client.batch({:foo => :baz, :bar => :alfa}); end # bad structure
+    assert_raise Orientdb4r::ServerError do @client.batch({:operations => [{:type => :d, :record => {'@rid' => '#123:456'}}]}); end # bad cluster
+    assert_nothing_thrown do puts @client.batch({:operations => [{:type => :d, :record => {'@rid' => "##{doc.doc_rid.cluster_id}:678"}}]}); end # bad RID is not problem
+  end
+
+  def test_batch_transaction
+    doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
+
+    assert_raise Orientdb4r::ServerError do # will fail on update => tx on => create must be rollbacked
+      rslt = @client.batch({:transaction => true, :operations => [
+        {:type => :c, :record => {'@class' => CLASS, :prop2 => 'foo'}},
+        {:type => :u, :record => {'@rid' => doc.doc_rid}},
+      ]})
+    end
+    assert_equal 1, @client.query("SELECT count(*) FROM #{CLASS}")[0]['count']
+
+    assert_raise Orientdb4r::ServerError do # will fail on update => tx off => create must be done
+      rslt = @client.batch({:transaction => false, :operations => [
+        {:type => :c, :record => {'@class' => CLASS, :prop2 => 'foo'}},
+        {:type => :u, :record => {'@rid' => doc.doc_rid}},
+      ]})
+    end
+    assert_equal 2, @client.query("SELECT count(*) FROM #{CLASS}")[0]['count']
   end
 
 end
