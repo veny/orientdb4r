@@ -1,3 +1,7 @@
+0.5.1 2015-26-03
+- Enhancement #39  : Support for batch operations
+- Pull Request #40 : Support for Gremlin commands
+
 0.5.0 2015-03-02
 - Provides fixes to be fully compatible with OrientDb v2.x.
 - No more backward compatible with OrientDb v1.5.x and lesser
