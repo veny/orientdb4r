@@ -8,7 +8,7 @@ before_script:
   - bundle exec rake db:setup4test
 
 env:
-  - ORIENTDB_VERSION=2.0.4
+  - ORIENTDB_VERSION=2.0.5
 
 notifications:
   email:
