@@ -7,6 +7,15 @@ class TestClient < Test::Unit::TestCase
   PROXY_URL = 'http://bad.domain.com'
 
   ###
+  # Test inintialization of corresponding client type
+  def test_client_type
+    client = Orientdb4r.client :instance => :new
+    assert_instance_of Orientdb4r::RestClient, client
+    client = Orientdb4r.client :instance => :new, :binary => true
+    assert_instance_of Orientdb4r::Binary::BinClient, client
+  end
+
+  ###
   # Test inintialization of single node.
   def test_one_node_initialization
     client = Orientdb4r.client :instance => :new

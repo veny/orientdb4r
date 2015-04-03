@@ -2,7 +2,8 @@ require 'rake/testtask'
 require 'rest_client'
 
 Rake::TestTask.new do |t|
-  t.libs << 'test'
+  t.libs = ['lib', 'test']
+  t.pattern = 'test/**/test_*.rb'
 end
 
 desc "Run tests"

@@ -8,10 +8,13 @@ require 'orientdb4r/version'
 # This module represents the entry point for using the Ruby OrientDB client.
 module Orientdb4r
 
+  module Binary
+    autoload :BinClient,      'orientdb4r/bin/client'
+  end
+
   autoload :Utils,            'orientdb4r/utils'
   autoload :Client,           'orientdb4r/client'
   autoload :RestClient,       'orientdb4r/rest/client'
-  autoload :BinClient,        'orientdb4r/bin/client'
   autoload :Rid,              'orientdb4r/rid'
   autoload :HashExtension,    'orientdb4r/rest/model'
   autoload :OClass,           'orientdb4r/rest/model'
@@ -31,14 +34,17 @@ module Orientdb4r
     # Gets a new database client or an existing for the current thread.
     # === options
     #  * :instance => :new
+    #  * :binary => true
+    #  * :connection_library => :restclient | :excon
     def client options={}
       if :new == options[:instance]
         options.delete :instance
-        return RestClient.new options
+        return options.delete(:binary) ? Binary::BinClient.new(options) : RestClient.new(options)
       end
 
       Thread.exclusive {
-        Thread.current[:orientdb_client] ||= RestClient.new options
+        client = options.delete(:binary) ? Binary::BinClient.new(options) : RestClient.new(options)
+        Thread.current[:orientdb_client] ||= client
         #Thread.current[:orientdb_client] ||= BinClient.new options
       }
     end
