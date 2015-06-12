@@ -1,3 +1,5 @@
+require 'uri'
+
 module Orientdb4r
 
   class Client
@@ -310,7 +312,10 @@ module Orientdb4r
         # credentials if not defined explicitly
         options[:user] = user unless options.include? :user
         options[:password] = password unless options.include? :password
-
+        debug_string = options[:uri]
+        if debug_string
+          query_log("Orientdb4r::Client#call_server", URI.decode(debug_string))
+        end
         idx = lb_strategy.node_index
         raise OrientdbError, lb_all_bad_msg if idx.nil? # no good node found
 
@@ -345,9 +350,13 @@ module Orientdb4r
       def time_around(&block)
         start = Time.now
         rslt = block.call
-        Orientdb4r::logger.debug \
-          "#{aop_context[:class].name}##{aop_context[:method]}: elapsed time = #{Time.now - start} [s]"
+        query_log("#{aop_context[:class].name}##{aop_context[:method]}", "elapsed time = #{Time.now - start} [s]")
         rslt
+      end
+
+      def query_log(context, message)
+        Orientdb4r::logger.debug \
+          "  \033[01;33m#{context}:\033[0m #{message}"
       end
 
   end
