@@ -448,7 +448,7 @@ module Orientdb4r
       ###
       # Composes message of an error raised if the HTTP response doesn't
       # correspond with expectation.
-      def compose_error_message(http_response, max_len=200)
+      def compose_error_message(http_response, max_len=300)
         msg = http_response.body.gsub("\n", ' ')
         msg = "#{msg[0..max_len]} ..." if msg.size > max_len
         msg
