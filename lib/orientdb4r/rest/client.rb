@@ -103,7 +103,12 @@ module Orientdb4r
       # https://groups.google.com/forum/?fromgroups=#!topic/orient-database/R0VoOfIyDng
       #decorate_classes_with_model(rslt['classes']) unless rslt['classes'].nil?
 
-      Orientdb4r::logger.info "successfully connected to server, code=#{rslt.code}"
+      if @connection_library == :excon
+        Orientdb4r::logger.info "successfully connected to server, code=#{http_response.code}"
+      else
+        Orientdb4r::logger.info "successfully connected to server, code=#{rslt.code}"
+      end
+
       @connected = true
       @connected
     end
