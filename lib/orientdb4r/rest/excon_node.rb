@@ -85,8 +85,9 @@ module Orientdb4r
 
         options = {}
         options[:proxy] = proxy unless proxy.nil?
+        options[:scheme], options[:host], options[:port]=url.scan(/(.*):\/\/(.*):([0-9]*)/).first
 
-        @connection ||= Excon::Connection.new(url, options)
+        @connection ||= Excon::Connection.new(options)
         #:read_timeout => self.class.read_timeout,
         #:write_timeout => self.class.write_timeout,
         #:connect_timeout => self.class.connect_timeout
