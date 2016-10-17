@@ -64,8 +64,16 @@ module Orientdb4r
   end
 
   ###
+  # Error indicating that the request is malformed of invalid somehow.
+  class InvalidRequestError < OrientdbError; end
+
+  ###
   # Error indicating that access to the resource requires user authentication.
   class UnauthorizedError < OrientdbError; end
+
+  ###
+  # Error indicating a conflict between database state and the request
+  class StateConflictError < OrientdbError; end
 
   ###
   # Error indicating that the server encountered an unexpected condition which prevented it from fulfilling the request.

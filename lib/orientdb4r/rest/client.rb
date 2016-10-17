@@ -331,9 +331,7 @@ module Orientdb4r
       raise ArgumentError, "class name is blank" if blank?(name)
 
       response = call_server(:method => :get, :uri => "class/#{@database}/#{name}")
-      rslt = process_response(response) do
-        raise NotFoundError, 'class not found' if response.body =~ /Invalid class/
-      end
+      rslt = process_response(response)
 
       classes = [rslt]
       decorate_classes_with_model(classes)
@@ -348,6 +346,8 @@ module Orientdb4r
       end
 
       clazz
+    rescue NotFoundError
+      raise NotFoundError, 'class not found'
     end
 
 
@@ -423,8 +423,14 @@ module Orientdb4r
 
 
         # return code
-        if 401 == response.code
+        if 400 == response.code
+          raise InvalidRequestError, compose_error_message(response)
+        elsif 401 == response.code
           raise UnauthorizedError, compose_error_message(response)
+        elsif 404 == response.code
+          raise NotFoundError, compose_error_message(response)
+        elsif 409 == response.code
+          raise StateConflictError, compose_error_message(response)
         elsif 500 == response.code
           raise ServerError, compose_error_message(response)
         elsif 2 != (response.code / 100)
@@ -455,6 +461,9 @@ module Orientdb4r
       # correspond with expectation.
       def compose_error_message(http_response, max_len=200)
         msg = http_response.body.gsub("\n", ' ')
+        if (matcher = msg.match(/"content": "([^"]+)"/))
+          msg = matcher[1]
+        end
         msg = "#{msg[0..max_len]} ..." if msg.size > max_len
         msg
       end

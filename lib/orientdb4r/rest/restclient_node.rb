@@ -39,7 +39,7 @@ module Orientdb4r
 
         # store session ID if received to reuse in next request
         sessid = response.cookies[SESSION_COOKIE_NAME]
-        if session_id != sessid and use_session
+        if sessid and session_id != sessid and use_session
           @session_id = sessid
           Orientdb4r::logger.debug "new session id: #{session_id}"
         end
