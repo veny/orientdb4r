@@ -27,6 +27,7 @@ module Orientdb4r
   autoload :RoundRobin,       'orientdb4r/load_balancing'
   autoload :DocumentMetadata, 'orientdb4r/rest/model'
 
+  MUTEX_CLIENT = Mutex.new
 
   class << self
 
@@ -42,7 +43,7 @@ module Orientdb4r
         return options.delete(:binary) ? Binary::BinClient.new(options) : RestClient.new(options)
       end
 
-      Thread.exclusive {
+      MUTEX_CLIENT.synchronize {
         client = options.delete(:binary) ? Binary::BinClient.new(options) : RestClient.new(options)
         Thread.current[:orientdb_client] ||= client
         #Thread.current[:orientdb_client] ||= BinClient.new options
