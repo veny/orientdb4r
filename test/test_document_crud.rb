@@ -157,7 +157,7 @@ class TestDocumentCrud < Test::Unit::TestCase
     doc = @client.create_document( { '@class' => CLASS, 'prop1' => 1, 'prop2' => 'text' })
     assert_raise Orientdb4r::ServerError do @client.batch(nil); end
     assert_raise Orientdb4r::ServerError do @client.batch({:foo => :baz, :bar => :alfa}); end # bad structure
-    assert_raise Orientdb4r::ServerError do @client.batch({:operations => [{:type => :d, :record => {'@rid' => '#123:456'}}]}); end # bad cluster
+    assert_raise Orientdb4r::NotFoundError do @client.batch({:operations => [{:type => :d, :record => {'@rid' => '#123:456'}}]}); end # bad cluster
     assert_nothing_thrown do @client.batch({:operations => [{:type => :d, :record => {'@rid' => "##{doc.doc_rid.cluster_id}:678"}}]}); end # bad RID is not problem
   end
 

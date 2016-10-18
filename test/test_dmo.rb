@@ -49,7 +49,7 @@ class TestDmo < Test::Unit::TestCase
     assert_equal urids.size, @client.query("SELECT FROM #{CLASS} WHERE prop2 = 'linkset'")[0]['friends'].size
 
     # table doesn't exist
-    assert_raise Orientdb4r::ServerError do
+    assert_raise Orientdb4r::InvalidRequestError do
       @client.command "INSERT INTO #{CLASS}x (prop1, prop2, friends) VALUES (1, 'linkset', [#{urids.join(',')}])"
     end
     # bad syntax
@@ -92,7 +92,7 @@ class TestDmo < Test::Unit::TestCase
     assert_equal 1, gr.select { |e| e if e['@class'] == 'ORole' }.size
 
     # table doesn't exist
-    assert_raise Orientdb4r::ServerError do
+    assert_raise Orientdb4r::InvalidRequestError do
       @client.query 'SELECT FROM OUserX'
     end
     # bad syntax
@@ -105,7 +105,7 @@ class TestDmo < Test::Unit::TestCase
     assert_instance_of Array, entries
     assert entries.empty?
     # try to find entry in a non-existing cluster
-    assert_raise Orientdb4r::ServerError do @client.query 'SELECT FROM #111:1111'; end
+    assert_raise Orientdb4r::NotFoundError do @client.query 'SELECT FROM #111:1111'; end
     # used for INSERT
     assert_raise Orientdb4r::ServerError do
       @client.query "INSERT INTO #{CLASS} (prop1, prop2, friends) VALUES (0, 'string0', [])"

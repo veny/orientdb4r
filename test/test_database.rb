@@ -80,7 +80,7 @@ class TestDatabase < Test::Unit::TestCase
       @client.get_database :database => 'UniT', :user => 'admin', :password => 'admin'
     end
     # creating an existing DB
-    assert_raise Orientdb4r::ServerError do
+    assert_raise Orientdb4r::StateConflictError do
       @client.create_database :database => 'UniT', :user => 'root', :password => DB_ROOT_PASS
     end
     # insufficient rights

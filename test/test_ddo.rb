@@ -93,7 +93,7 @@ class TestDdo < Test::Unit::TestCase
     assert_equal 'OUser', clazz.super_class
 
     # bad super class
-    assert_raise Orientdb4r::ServerError do @client.create_class(CLASS, :extends => 'nonExistingSuperClass'); end
+    assert_raise Orientdb4r::InvalidRequestError do @client.create_class(CLASS, :extends => 'nonExistingSuperClass'); end
   end
 
 
