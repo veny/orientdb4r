@@ -219,7 +219,7 @@ module Orientdb4r
 
 
     #> curl --user root:root http://localhost:2480/listDatabases
-    def list_databases(options=nil) #:nodoc:
+    def list_databases(options={}) #:nodoc:
       verify_and_sanitize_options(options, { :user => :optional, :password => :optional })
 
       params = { :method => :get, :uri => 'listDatabases', :no_session => true }
